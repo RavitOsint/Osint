@@ -2,112 +2,79 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Escape Room</title>
+    <title>משימת סייבר - חניך</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; background-color: #0d0d0d; color: #00ff41; margin: 0; padding: 20px; }
-        .container { max-width: 700px; margin: auto; }
-        .header { text-align: center; margin-bottom: 40px; padding: 20px; border: 1px dashed #00ff41; }
-        
-        .question-card { 
-            background: #1a1a1a; 
-            padding: 20px; 
-            border-radius: 5px; 
-            margin-bottom: 20px; 
-            border-left: 4px solid #333;
-            transition: all 0.5s ease;
-        }
-        
-        /* עיצוב לשאלה פעילה */
-        .active { border-left: 4px solid #00ff41; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
-        
-        /* הסתרת שאלות שטרם נפתחו */
-        .locked { opacity: 0.3; pointer-events: none; filter: blur(2px); }
-        
-        .options li { background: #262626; padding: 10px; margin: 5px 0; cursor: pointer; border: 1px solid #333; list-style: none; }
-        .options li:hover { background: #333; }
-        .correct { color: #00ff41; border-color: #00ff41 !important; font-weight: bold; }
-        
-        input { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; width: 80%; margin-top: 10px; }
-        button { background: #00ff41; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .status { margin-top: 10px; font-size: 0.9em; height: 20px; }
-        
-        #victory-message { display: none; text-align: center; color: gold; font-size: 1.5em; border: 2px double gold; padding: 20px; margin-top: 20px; }
+        body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; text-align: center; padding: 50px; }
+        .box { border: 2px solid #00ff41; padding: 30px; display: inline-block; min-width: 300px; }
+        input { background: black; color: #00ff41; border: 1px solid #00ff41; padding: 10px; margin: 10px; }
+        .error { color: #ff4141; font-weight: bold; }
+        #timer { font-size: 2em; color: #ff4141; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
-        <h1>משימת סייבר: חדירה למערכת</h1>
-        <p>עליך לפצח את כל השלבים כדי לקבל גישת מנהל (Root).</p>
+    <div id="game" class="box">
+        <h2 id="catTitle">טוען קטגוריה...</h2>
+        <p id="qText">מחכה למדריכה...</p>
+        <input id="userAns" placeholder="הכנס תשובה">
+        <button id="submitBtn" onclick="check()">שלח</button>
+        <p id="msg"></p>
+        <div id="timer"></div>
     </div>
 
-    <div class="question-card active" id="stage1">
-        <h3>שלב 1: איסוף מידע (Recon)</h3>
-        <p>מהי הפקודה במערכת Linux המשמשת להצגת כתובת ה-IP של המחשב?</p>
-        <ul class="options">
-            <li onclick="checkStep(1, 'ip addr', true)">ip addr</li>
-            <li onclick="checkStep(1, 'ls', false)">ls</li>
-            <li onclick="checkStep(1, 'whoami', false)">whoami</li>
-        </ul>
-        <div class="status" id="status1"></div>
-    </div>
+    <script>
+        let questions = [];
+        let currentIndex = 0;
+        const DB_URL = "הדביקי_כאן_את_ה-URL_שלך/questions.json";
+        const SETTINGS_URL = "הדביקי_כאן_את_ה-URL_שלך/settings.json";
 
-    <div class="question-card locked" id="stage2">
-        <h3>שלב 2: ניתוח קוד</h3>
-        <p>פענח את המחרוזת הבאה מקידוד Binary לטקסט: <b>01101000 01101001</b></p>
-        <input type="text" id="ans2" placeholder="הכנס את המילה המסתתרת...">
-        <button onclick="checkStep(2, 'hi')">שלח פיצוח</button>
-        <div class="status" id="status2"></div>
-    </div>
-
-    <div class="question-card locked" id="stage3">
-        <h3>שלב 3: ה-Flag האחרון</h3>
-        <p>מהו ה-Port המוגדר כברירת מחדל עבור פרוטוקול HTTP?</p>
-        <input type="text" id="ans3" placeholder="מספר ה-Port...">
-        <button onclick="checkStep(3, '80')">סיום משימה</button>
-        <div class="status" id="status3"></div>
-    </div>
-
-    <div id="victory-message">
-        🏆 הגישה אושרה! כל הכבוד, האקרית. 🏆
-    </div>
-</div>
-
-<script>
-    function checkStep(stage, correctAns, isMultiple = false) {
-        let userAns;
-        if (isMultiple) {
-            userAns = correctAns; // בשאלות אמריקאיות נשלח את התשובה ישירות
-        } else {
-            userAns = document.getElementById('ans' + stage).value.trim().toLowerCase();
+        async function init() {
+            const settings = await fetch(SETTINGS_URL).then(r => r.json());
+            const allQ = await fetch(DB_URL).then(r => r.json());
+            
+            // סינון שאלות לפי הקטגוריה שהמדריכה בחרה
+            questions = Object.values(allQ).filter(q => q.category === settings.activeCategory);
+            document.getElementById('catTitle').innerText = "קטגוריה: " + settings.activeCategory;
+            showQuestion();
         }
 
-        const status = document.getElementById('status' + stage);
-        const currentCard = document.getElementById('stage' + stage);
-
-        if (userAns === correctAns) {
-            status.innerHTML = "✅ הגישה אושרה לשלב הבא.";
-            currentCard.classList.remove('active');
-            currentCard.style.borderColor = "#00ff41";
-            
-            const nextStage = stage + 1;
-            const nextCard = document.getElementById('stage' + nextStage);
-            
-            if (nextCard) {
-                nextCard.classList.remove('locked');
-                nextCard.classList.add('active');
-                nextCard.scrollIntoView({ behavior: 'smooth' });
+        function showQuestion() {
+            if (currentIndex < questions.length) {
+                document.getElementById('qText').innerText = questions[currentIndex].text;
+                document.getElementById('msg').innerText = `שאלה ${currentIndex + 1} מתוך ${questions.length}`;
             } else {
-                document.getElementById('victory-message').style.display = 'block';
+                document.getElementById('game').innerHTML = "<h1>🏆 המשימה הושלמה!</h1>";
             }
-        } else {
-            status.innerHTML = "❌ גישה נדחתה. נסי שוב.";
-            status.style.color = "#ff4141";
         }
-    }
-</script>
 
+        function check() {
+            const val = document.getElementById('userAns').value;
+            if (val === questions[currentIndex].answer) {
+                currentIndex++;
+                document.getElementById('userAns').value = "";
+                showQuestion();
+            } else {
+                penalty();
+            }
+        }
+
+        function penalty() {
+            let timeLeft = 10;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('msg').innerText = "תשובה שגויה! המערכת ננעלה...";
+            
+            const interval = setInterval(() => {
+                document.getElementById('timer').innerText = timeLeft;
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(interval);
+                    document.getElementById('timer').innerText = "";
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('msg').innerText = "";
+                }
+            }, 1000);
+        }
+
+        init();
+    </script>
 </body>
 </html>
