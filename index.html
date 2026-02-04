@@ -4,115 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberQuest - תרגול OSINT</title>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #38bdf8;
-            --text-color: #f1f5f9;
-            --error-color: #ef4444;
-            --success-color: #10b981;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Assistant', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
+        :root { --bg-color: #0f172a; --card-bg: #1e293b; --accent: #38bdf8; --text: #f1f5f9; --error: #ef4444; --success: #10b981; }
+        body { background-color: var(--bg-color); color: var(--text); font-family: 'Assistant', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .container { width: 100%; max-width: 500px; padding: 20px; }
-
-        .terminal-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: fadeIn 0.8s ease;
-        }
-
-        .terminal-header {
-            background: rgba(0,0,0,0.2);
-            padding: 12px 20px;
-            display: flex;
-            gap: 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
+        .terminal-card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; animation: fadeIn 0.8s ease; }
+        .terminal-header { background: rgba(0,0,0,0.2); padding: 12px 20px; display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
         .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
-
         .content { padding: 30px; text-align: center; }
-        h2 { font-weight: 700; margin-bottom: 15px; color: var(--accent-color); }
-        p { font-family: 'Fira Code', monospace; font-size: 1.1em; line-height: 1.6; min-height: 60px; }
-
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid #334155;
-            border-radius: 8px;
-            color: white;
-            font-family: 'Fira Code', monospace;
-            box-sizing: border-box;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent-color);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-            font-size: 1.1rem;
-        }
-
-        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        
-        .option-btn { 
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid var(--accent-color); 
-            color: var(--accent-color); 
-            width: 100%; 
-            margin-bottom: 8px; 
-        }
-
-        #timer { font-size: 2em; color: var(--error-color); font-family: 'Fira Code', monospace; margin-top: 10px; }
-        #msg { margin-top: 15px; font-weight: bold; }
-
-        #gameArea, #finishArea { display: none; }
-        #welcomeArea { display: block; }
-
+        h2 { font-weight: 700; color: var(--accent); margin-bottom: 20px; }
+        p { font-size: 1.2rem; line-height: 1.6; white-space: pre-wrap; text-align: right; margin: 20px 0; }
+        input { width: 100%; padding: 14px; background: rgba(0,0,0,0.3); border: 2px solid #334155; border-radius: 8px; color: white; text-align: center; margin-bottom: 10px; font-size: 1.1rem; }
+        button { width: 100%; padding: 14px; background: var(--accent); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1.1rem; }
+        .option-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--accent); color: var(--accent); margin-bottom: 8px; }
+        #timer { font-size: 2.5rem; color: var(--error); font-family: 'Fira Code', monospace; margin-top: 10px; }
+        #welcomeArea, #gameArea, #finishArea { display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .finish-icon { font-size: 4rem; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="terminal-card">
-        <div class="terminal-header">
-            <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-        </div>
+        <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
         
-        <div class="content" id="welcomeArea">
+        <div class="content" id="welcomeArea" style="display:block">
             <h2>משימת OSINT</h2>
-            <p>ברוכים הבאים לתרגול OSINT, לפניכם מספר אתגרים. כדי לעבור לשאלה הבאה יש צורך בפיתרון השאלה הנוכחית.</p>
-            <p style="font-size: 0.9em; color: var(--accent-color);">בהצלחה!</p>
+            <p style="text-align: center;">ברוכים הבאים לתרגול OSINT, לפניכם מספר אתגרים. כדי לעבור לשאלה הבאה יש צורך בפיתרון השאלה הנוכחית.</p>
+            <p style="text-align: center; color: var(--accent);">בהצלחה!</p>
             <button onclick="startMission()">התחל משימה</button>
         </div>
 
@@ -120,149 +41,100 @@
             <h2 id="catTitle">מתחבר...</h2>
             <p id="qText">טוען נתונים...</p>
             <div id="dynamicInput"></div>
-            <div id="msg"></div>
+            <div id="msg" style="margin-top:15px; font-weight:bold"></div>
             <div id="timer"></div>
         </div>
 
         <div class="content" id="finishArea">
-            <div class="finish-icon">🏆</div>
+            <div style="font-size: 4rem;">🏆</div>
             <h2>כל הכבוד!</h2>
-            <p>השלמתן את כל אתגרי ה-OSINT בקטגוריה זו בהצלחה.</p>
-            <button onclick="location.reload()" style="background: var(--success-color); color: white;">חזרה להתחלה</button>
+            <p style="text-align: center;">השלמתן את כל אתגרי ה-OSINT בהצלחה.</p>
+            <button onclick="location.reload()">חזרה להתחלה</button>
         </div>
     </div>
 </div>
 
 <script>
-    // חובה להחליף ב-URL שלך מ-Firebase!
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
-
-    let questions = [];
-    let currentIndex = 0;
-    let currentCategory = "";
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; // <--- חובה להחליף!
+    let questions = [], currentIndex = 0, currentCategory = "";
 
     function startMission() {
         document.getElementById('welcomeArea').style.display = 'none';
         document.getElementById('gameArea').style.display = 'block';
-        observeData(); // מתחיל להקשיב לשינויים
+        observeData();
     }
 
-    // פונקציה שמקשיבה לשינויים ב-Firebase בזמן אמת (Long Polling פשוט)
     async function observeData() {
         setInterval(async () => {
             try {
-                const settingsRes = await fetch(`${BASE_URL}settings.json`);
-                const settings = await settingsRes.json();
-                
-                // אם הקטגוריה השתנתה ב-Admin, נטען מחדש
-                if (settings && settings.activeCategory !== currentCategory) {
-                    currentCategory = settings.activeCategory;
+                const sRes = await fetch(`${BASE_URL}settings.json`);
+                const sData = await sRes.json();
+                if (sData && sData.activeCategory !== currentCategory) {
+                    currentCategory = sData.activeCategory;
                     currentIndex = 0;
-                    fetchQuestions();
+                    const qRes = await fetch(`${BASE_URL}questions.json`);
+                    const allQ = await qRes.json();
+                    questions = Object.values(allQ).filter(q => q.category === currentCategory);
+                    showQuestion();
                 }
-            } catch (e) { console.error("סנכרון נכשל"); }
-        }, 3000); // בודק שינויים כל 3 שניות
-    }
-
-    async function fetchQuestions() {
-        try {
-            const qRes = await fetch(`${BASE_URL}questions.json`);
-            const allQ = await qRes.json();
-            
-            questions = Object.values(allQ).filter(q => q.category === currentCategory);
-            document.getElementById('catTitle').innerText = currentCategory;
-            
-            if (questions.length === 0) {
-                document.getElementById('qText').innerText = "המתינו שהמדריכה תפעיל שאלות...";
-                document.getElementById('dynamicInput').innerHTML = "";
-            } else {
-                showQuestion();
-            }
-        } catch (e) {
-            document.getElementById('qText').innerText = "שגיאה בטעינת שאלות.";
-        }
+            } catch (e) {}
+        }, 3000);
     }
 
     function showQuestion() {
-        const container = document.getElementById('dynamicInput');
-        const msg = document.getElementById('msg');
-        
+        const container = document.getElementById('dynamicInput'), msg = document.getElementById('msg');
+        document.getElementById('catTitle').innerText = currentCategory;
         if (currentIndex < questions.length) {
             const q = questions[currentIndex];
             document.getElementById('qText').innerText = q.text;
             container.innerHTML = "";
             msg.innerText = `שלב ${currentIndex + 1} מתוך ${questions.length}`;
-            msg.style.color = "var(--text-color)";
-
             if (q.type === 'multiple') {
                 q.options.forEach(opt => {
-                    if (opt && opt.trim() !== "") {
-                        const btn = document.createElement('button');
-                        btn.innerText = opt;
-                        btn.className = "option-btn";
-                        btn.onclick = () => check(opt);
-                        container.appendChild(btn);
-                    }
+                    const btn = document.createElement('button');
+                    btn.innerText = opt; btn.className = "option-btn";
+                    btn.onclick = () => check(opt); container.appendChild(btn);
                 });
             } else {
                 const input = document.createElement('input');
-                input.id = "userAns";
-                input.placeholder = "הקלידו תשובה...";
+                input.id = "userAns"; input.placeholder = "הקלידו תשובה...";
                 input.onkeydown = (e) => { if(e.key === 'Enter') check(input.value); };
                 const btn = document.createElement('button');
-                btn.innerText = "אימות פתרון";
-                btn.onclick = () => check(input.value);
-                container.appendChild(input);
-                container.appendChild(btn);
+                btn.innerText = "אימות פתרון"; btn.onclick = () => check(input.value);
+                container.appendChild(input); container.appendChild(btn);
             }
         } else {
-            showFinishButton();
+            document.getElementById('qText').innerText = "סיימתן את השאלות!";
+            container.innerHTML = `<button onclick="finish()" style="background:var(--success); color:white">🚩 סיום אתגר</button>`;
         }
     }
 
     function check(val) {
-        const correct = questions[currentIndex].answer;
-        if (val.trim().toLowerCase() === correct.toLowerCase()) {
-            currentIndex++;
-            document.getElementById('msg').style.color = "var(--success-color)";
-            document.getElementById('msg').innerText = "✅ נכון!";
-            setTimeout(showQuestion, 800);
+        if (val.trim().toLowerCase() === questions[currentIndex].answer.toLowerCase()) {
+            currentIndex++; showQuestion();
         } else {
             penalty();
         }
     }
 
     function penalty() {
-        let timeLeft = 10;
-        const container = document.getElementById('dynamicInput');
-        const timerDisplay = document.getElementById('timer');
-        container.style.pointerEvents = "none";
-        container.style.opacity = "0.5";
-        
-        const interval = setInterval(() => {
-            timerDisplay.innerText = timeLeft;
-            timeLeft--;
-            if (timeLeft < 0) {
-                clearInterval(interval);
-                timerDisplay.innerText = "";
-                container.style.pointerEvents = "all";
-                container.style.opacity = "1";
+        let t = 10;
+        document.getElementById('dynamicInput').style.pointerEvents = "none";
+        document.getElementById('dynamicInput').style.opacity = "0.5";
+        const itv = setInterval(() => {
+            document.getElementById('timer').innerText = t; t--;
+            if (t < 0) {
+                clearInterval(itv); document.getElementById('timer').innerText = "";
+                document.getElementById('dynamicInput').style.pointerEvents = "all";
+                document.getElementById('dynamicInput').style.opacity = "1";
             }
         }, 1000);
     }
 
-    function showFinishButton() {
-        document.getElementById('qText').innerText = "סיימתן את כל השאלות בקטגוריה זו!";
-        const container = document.getElementById('dynamicInput');
-        container.innerHTML = `<button onclick="completeMission()" style="background: var(--success-color); color: white; font-size: 1.5rem; padding: 20px;">🚩 סיום אתגר</button>`;
-        document.getElementById('msg').innerText = "";
-    }
-
-    function completeMission() {
+    function finish() {
         document.getElementById('gameArea').style.display = 'none';
         document.getElementById('finishArea').style.display = 'block';
     }
 </script>
-
 </body>
 </html>
