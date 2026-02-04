@@ -2,161 +2,139 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>CyberQuest Admin - ניהול מערכת</title>
+    <title>CyberQuest Admin - ניהול מתקדם</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --sidebar-bg: #1e293b;
-            --main-bg: #f8fafc;
-            --accent: #38bdf8;
-            --text-main: #0f172a;
-        }
-
-        body { font-family: 'Assistant', sans-serif; margin: 0; background-color: var(--main-bg); color: var(--text-main); display: flex; min-height: 100vh; }
-        
-        /* מסך כניסה */
+        :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --text-main: #0f172a; }
+        body { font-family: 'Assistant', sans-serif; margin: 0; background-color: var(--main-bg); display: flex; min-height: 100vh; }
         #loginArea { position: fixed; inset: 0; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 300px; }
-        
-        /* מבנה Dashboard */
-        #adminContent { display: none; width: 100%; display: flex; }
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; display: flex; flex-direction: column; }
-        .main-panel { flex: 1; padding: 40px; overflow-y: auto; }
-        
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        
-        h1, h2 { margin-top: 0; color: var(--sidebar-bg); }
-        .sidebar h2 { color: var(--accent); font-size: 1.5rem; margin-bottom: 30px; }
-
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        
-        /* טבלת שאלות */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #f1f5f9; text-align: right; padding: 12px; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        .btn-delete { background: #ef4444; color: white; padding: 5px 10px; width: auto; font-size: 0.8rem; }
-
-        .active-status { background: #dcfce7; color: #166534; padding: 5px 12px; border-radius: 20px; font-weight: bold; display: inline-block; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 300px; }
+        #adminContent { width: 100%; display: none; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; }
+        .main-panel { flex: 1; padding: 40px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: right; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        .delete-btn { background: #ef4444; color: white; width: auto; padding: 3px 8px; font-size: 0.8rem; }
+        .cat-tag { display: inline-block; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; margin: 2px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
 <div id="loginArea">
     <div class="login-card">
-        <h2>CyberQuest Admin</h2>
-        <input type="password" id="adminPass" placeholder="סיסמת ניהול">
-        <button onclick="login()">כניסה למערכת</button>
+        <h2>כניסת מנהלת</h2>
+        <input type="password" id="adminPass" placeholder="סיסמה">
+        <button onclick="login()">כניסה</button>
     </div>
 </div>
 
-<div id="adminContent" style="display: none;">
-    <div class="sidebar">
-        <h2>ניהול סייבר</h2>
-        <p>שלום, המדריכה</p>
-        <hr style="width:100%; opacity: 0.1;">
-        <p style="font-size: 0.9rem; color: #94a3b8;">כאן את שולטת בתוכן שמוצג לחניכים באתר הראשי.</p>
-    </div>
-
-    <div class="main-panel">
-        <h1>לוח בקרה</h1>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div class="card">
-                <h2>➕ הוספת שאלה</h2>
-                <input id="cat" placeholder="קטגוריה (למשל: תקשורת)">
-                <input id="text" placeholder="תוכן השאלה">
-                <input id="ans" placeholder="תשובה נכונה (Flag)">
-                <button onclick="addQuestion()">פרסם למסד הנתונים</button>
-            </div>
-
-            <div class="card">
-                <h2>📺 שידור חי</h2>
-                <p>הקטגוריה שמוצגת כרגע לחניכים:</p>
-                <div class="active-status" id="currentActiveDisplay">טוען...</div>
-                <input id="activeCatInput" placeholder="שם הקטגוריה להפעלה">
-                <button onclick="setActive()" style="background: var(--sidebar-bg); color: white;">עדכן שידור</button>
+<div id="adminContent">
+    <div style="display: flex; width: 100%;">
+        <div class="sidebar">
+            <h2>ניהול סייבר</h2>
+            <div class="card" style="background: rgba(255,255,255,0.1); color: white;">
+                <h4>📁 ניהול קטגוריות</h4>
+                <input id="newCatName" placeholder="שם קטגוריה חדשה" style="background: white;">
+                <button onclick="addCategory()" style="background: white;">הוסף קטגוריה</button>
+                <div id="catListSidebar" style="margin-top: 15px;"></div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>📚 מאגר שאלות</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>קטגוריה</th>
-                        <th>שאלה</th>
-                        <th>תשובה</th>
-                        <th>פעולות</th>
-                    </tr>
-                </thead>
-                <tbody id="questionsTableBody">
-                    </tbody>
-            </table>
+        <div class="main-panel">
+            <h1>לוח בקרה</h1>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h2>➕ הוספת שאלה</h2>
+                    <select id="qCatSelect"><option>טוען קטגוריות...</option></select>
+                    <select id="qType" onchange="document.getElementById('multOptions').style.display = (this.value=='multiple'?'block':'none')">
+                        <option value="open">שאלה פתוחה (Flag)</option>
+                        <option value="multiple">שאלה אמריקאית</option>
+                    </select>
+                    <input id="qText" placeholder="תוכן השאלה">
+                    <div id="multOptions" style="display:none">
+                        <input id="opt1" placeholder="אופציה 1"><input id="opt2" placeholder="אופציה 2">
+                        <input id="opt3" placeholder="אופציה 3"><input id="opt4" placeholder="אופציה 4">
+                    </div>
+                    <input id="qAns" placeholder="התשובה הנכונה">
+                    <button onclick="addQuestion()">שמור שאלה</button>
+                </div>
+
+                <div class="card">
+                    <h2>📺 שידור חי</h2>
+                    <p>בחר קטגוריה להצגה לחניכים:</p>
+                    <select id="activeCatSelect"></select>
+                    <button onclick="setActive()" style="background: var(--sidebar-bg); color: white;">הפעל שידור</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📚 מאגר שאלות</h2>
+                <table>
+                    <thead><tr><th>קטגוריה</th><th>שאלה</th><th>תשובה</th><th>פעולה</th></tr></thead>
+                    <tbody id="questionsTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // הגדרות - חובה להחליף ב-URL שלך!
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
-    const MASTER_PASSWORD = "zigi2026";
+    const BASE_URL = "https://your-project-id.firebaseio.com/"; // חובה להחליף!
+    const MASTER_PASSWORD = "CyberTeacher2024";
 
     function login() {
-        if (document.getElementById('adminPass').value === MASTER_PASSWORD) {
+        if(document.getElementById('adminPass').value === MASTER_PASSWORD) {
             document.getElementById('loginArea').style.display = 'none';
             document.getElementById('adminContent').style.display = 'flex';
             loadData();
-        } else { alert("סיסמה שגויה"); }
+        } else { alert("טעות"); }
+    }
+
+    async function addCategory() {
+        const name = document.getElementById('newCatName').value.trim();
+        if(!name) return;
+        await fetch(`${BASE_URL}categories.json`, { method: 'POST', body: JSON.stringify({name: name}) });
+        document.getElementById('newCatName').value = "";
+        loadData();
     }
 
     async function loadData() {
-        // טעינת הגדרות (קטגוריה פעילה)
-        const sRes = await fetch(`${BASE_URL}settings.json`);
-        const settings = await sRes.json();
-        document.getElementById('currentActiveDisplay').innerText = settings ? settings.activeCategory : "אין";
+        // טעינת קטגוריות
+        const cRes = await fetch(`${BASE_URL}categories.json`);
+        const cData = await cRes.json();
+        const qCatSelect = document.getElementById('qCatSelect');
+        const activeCatSelect = document.getElementById('activeCatSelect');
+        const sidebarCats = document.getElementById('catListSidebar');
+        
+        qCatSelect.innerHTML = ""; activeCatSelect.innerHTML = ""; sidebarCats.innerHTML = "";
+
+        for (let id in cData) {
+            let catName = cData[id].name;
+            qCatSelect.innerHTML += `<option value="${catName}">${catName}</option>`;
+            activeCatSelect.innerHTML += `<option value="${catName}">${catName}</option>`;
+            sidebarCats.innerHTML += `<div class="cat-tag">${catName} <span style="cursor:pointer" onclick="deleteCat('${id}')">×</span></div>`;
+        }
 
         // טעינת שאלות
         const qRes = await fetch(`${BASE_URL}questions.json`);
-        const data = await qRes.json();
-        const tbody = document.getElementById('questionsTableBody');
+        const qData = await qRes.json();
+        const tbody = document.getElementById('questionsTable');
         tbody.innerHTML = "";
-        
-        for (let id in data) {
-            tbody.innerHTML += `
-                <tr>
-                    <td><b>${data[id].category}</b></td>
-                    <td>${data[id].text}</td>
-                    <td><code>${data[id].answer}</code></td>
-                    <td><button class="btn-delete" onclick="deleteQuestion('${id}')">מחק</button></td>
-                </tr>`;
+        for (let id in qData) {
+            tbody.innerHTML += `<tr>
+                <td>${qData[id].category}</td>
+                <td>${qData[id].text}</td>
+                <td><code>${qData[id].answer}</code></td>
+                <td><button class="delete-btn" onclick="deleteItem('questions/${id}')">מחק</button></td>
+            </tr>`;
         }
     }
 
     async function addQuestion() {
+        const type = document.getElementById('qType').value;
         const data = {
-            category: document.getElementById('cat').value,
-            text: document.getElementById('text').value,
-            answer: document.getElementById('ans').value
-        };
-        await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
-        loadData();
-    }
-
-    async function setActive() {
-        const cat = document.getElementById('activeCatInput').value;
-        await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify({ activeCategory: cat }) });
-        alert("השידור עודכן!");
-        loadData();
-    }
-
-    async function deleteQuestion(id) {
-        if (confirm("למחוק את השאלה?")) {
-            await fetch(`${BASE_URL}questions/${id}.json`, { method: 'DELETE' });
-            loadData();
-        }
-    }
-</script>
-</body>
-</html>
+            category: document.getElementById
