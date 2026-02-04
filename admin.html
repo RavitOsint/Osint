@@ -28,4 +28,135 @@
         h1, h2 { margin-top: 0; color: var(--sidebar-bg); }
         .sidebar h2 { color: var(--accent); font-size: 1.5rem; margin-bottom: 30px; }
 
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        /* טבלת שאלות */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f1f5f9; text-align: right; padding: 12px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        .btn-delete { background: #ef4444; color: white; padding: 5px 10px; width: auto; font-size: 0.8rem; }
+
+        .active-status { background: #dcfce7; color: #166534; padding: 5px 12px; border-radius: 20px; font-weight: bold; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<div id="loginArea">
+    <div class="login-card">
+        <h2>CyberQuest Admin</h2>
+        <input type="password" id="adminPass" placeholder="סיסמת ניהול">
+        <button onclick="login()">כניסה למערכת</button>
+    </div>
+</div>
+
+<div id="adminContent" style="display: none;">
+    <div class="sidebar">
+        <h2>ניהול סייבר</h2>
+        <p>שלום, המדריכה</p>
+        <hr style="width:100%; opacity: 0.1;">
+        <p style="font-size: 0.9rem; color: #94a3b8;">כאן את שולטת בתוכן שמוצג לחניכים באתר הראשי.</p>
+    </div>
+
+    <div class="main-panel">
+        <h1>לוח בקרה</h1>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card">
+                <h2>➕ הוספת שאלה</h2>
+                <input id="cat" placeholder="קטגוריה (למשל: תקשורת)">
+                <input id="text" placeholder="תוכן השאלה">
+                <input id="ans" placeholder="תשובה נכונה (Flag)">
+                <button onclick="addQuestion()">פרסם למסד הנתונים</button>
+            </div>
+
+            <div class="card">
+                <h2>📺 שידור חי</h2>
+                <p>הקטגוריה שמוצגת כרגע לחניכים:</p>
+                <div class="active-status" id="currentActiveDisplay">טוען...</div>
+                <input id="activeCatInput" placeholder="שם הקטגוריה להפעלה">
+                <button onclick="setActive()" style="background: var(--sidebar-bg); color: white;">עדכן שידור</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📚 מאגר שאלות</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>קטגוריה</th>
+                        <th>שאלה</th>
+                        <th>תשובה</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="questionsTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // הגדרות - חובה להחליף ב-URL שלך!
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
+    const MASTER_PASSWORD = "zigi2026";
+
+    function login() {
+        if (document.getElementById('adminPass').value === MASTER_PASSWORD) {
+            document.getElementById('loginArea').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'flex';
+            loadData();
+        } else { alert("סיסמה שגויה"); }
+    }
+
+    async function loadData() {
+        // טעינת הגדרות (קטגוריה פעילה)
+        const sRes = await fetch(`${BASE_URL}settings.json`);
+        const settings = await sRes.json();
+        document.getElementById('currentActiveDisplay').innerText = settings ? settings.activeCategory : "אין";
+
+        // טעינת שאלות
+        const qRes = await fetch(`${BASE_URL}questions.json`);
+        const data = await qRes.json();
+        const tbody = document.getElementById('questionsTableBody');
+        tbody.innerHTML = "";
+        
+        for (let id in data) {
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${data[id].category}</b></td>
+                    <td>${data[id].text}</td>
+                    <td><code>${data[id].answer}</code></td>
+                    <td><button class="btn-delete" onclick="deleteQuestion('${id}')">מחק</button></td>
+                </tr>`;
+        }
+    }
+
+    async function addQuestion() {
+        const data = {
+            category: document.getElementById('cat').value,
+            text: document.getElementById('text').value,
+            answer: document.getElementById('ans').value
+        };
+        await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
+        loadData();
+    }
+
+    async function setActive() {
+        const cat = document.getElementById('activeCatInput').value;
+        await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify({ activeCategory: cat }) });
+        alert("השידור עודכן!");
+        loadData();
+    }
+
+    async function deleteQuestion(id) {
+        if (confirm("למחוק את השאלה?")) {
+            await fetch(`${BASE_URL}questions/${id}.json`, { method: 'DELETE' });
+            loadData();
+        }
+    }
+</script>
+</body>
+</html>
