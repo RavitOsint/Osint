@@ -3,80 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>תרגול סייבר - בית הספר לסייבר</title>
+    <title>Cyber Escape Room</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; color: #e0e0e0; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h1 { color: #00ff41; text-align: center; border-bottom: 2px solid #00ff41; padding-bottom: 10px; }
-        .question-card { background: #3d3d3d; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-right: 5px solid #00ff41; }
-        .options { list-style: none; padding: 0; }
-        .options li { margin: 10px 0; background: #4d4d4d; padding: 10px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        .options li:hover { background: #5d5d5d; }
-        .options li.correct { background: #28a745 !important; color: white; }
-        .options li.wrong { background: #dc3545 !important; color: white; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #00ff41; background: #1a1a1a; color: #00ff41; box-sizing: border-box; }
-        button { background: #00ff41; color: #1a1a1a; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
-        button:hover { background: #00cc33; }
-        .feedback { margin-top: 10px; font-weight: bold; }
+        body { font-family: 'Courier New', Courier, monospace; background-color: #0d0d0d; color: #00ff41; margin: 0; padding: 20px; }
+        .container { max-width: 700px; margin: auto; }
+        .header { text-align: center; margin-bottom: 40px; padding: 20px; border: 1px dashed #00ff41; }
+        
+        .question-card { 
+            background: #1a1a1a; 
+            padding: 20px; 
+            border-radius: 5px; 
+            margin-bottom: 20px; 
+            border-left: 4px solid #333;
+            transition: all 0.5s ease;
+        }
+        
+        /* עיצוב לשאלה פעילה */
+        .active { border-left: 4px solid #00ff41; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
+        
+        /* הסתרת שאלות שטרם נפתחו */
+        .locked { opacity: 0.3; pointer-events: none; filter: blur(2px); }
+        
+        .options li { background: #262626; padding: 10px; margin: 5px 0; cursor: pointer; border: 1px solid #333; list-style: none; }
+        .options li:hover { background: #333; }
+        .correct { color: #00ff41; border-color: #00ff41 !important; font-weight: bold; }
+        
+        input { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; width: 80%; margin-top: 10px; }
+        button { background: #00ff41; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .status { margin-top: 10px; font-size: 0.9em; height: 20px; }
+        
+        #victory-message { display: none; text-align: center; color: gold; font-size: 1.5em; border: 2px double gold; padding: 20px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>משימת תרגול סייבר #1</h1>
+    <div class="header">
+        <h1>משימת סייבר: חדירה למערכת</h1>
+        <p>עליך לפצח את כל השלבים כדי לקבל גישת מנהל (Root).</p>
+    </div>
 
-    <div class="question-card" id="q1">
-        <h3>1. איזה פרוטוקול משמש להעברת קבצים בצורה מוצפנת?</h3>
+    <div class="question-card active" id="stage1">
+        <h3>שלב 1: איסוף מידע (Recon)</h3>
+        <p>מהי הפקודה במערכת Linux המשמשת להצגת כתובת ה-IP של המחשב?</p>
         <ul class="options">
-            <li onclick="checkMultiple('q1', 0, false)">HTTP</li>
-            <li onclick="checkMultiple('q1', 1, true)">SFTP</li>
-            <li onclick="checkMultiple('q1', 2, false)">FTP</li>
-            <li onclick="checkMultiple('q1', 3, false)">Telnet</li>
+            <li onclick="checkStep(1, 'ip addr', true)">ip addr</li>
+            <li onclick="checkStep(1, 'ls', false)">ls</li>
+            <li onclick="checkStep(1, 'whoami', false)">whoami</li>
         </ul>
-        <div class="feedback"></div>
+        <div class="status" id="status1"></div>
     </div>
 
-    <div class="question-card" id="q2">
-        <h3>2. שאלת אתגר: מצא את ה-Flag בקובץ המצורף (רמז: Base64)</h3>
-        <p style="font-size: 0.9em; color: #aaa;">קוד מוצפן: Q3liZXJTY2hvb2x7VzNsbF9EMW5lIX0=</p>
-        <input type="text" id="ans2" placeholder="הכנס את ה-Flag כאן...">
-        <button onclick="checkOpen('q2', 'ans2', 'CyberSchool{W3ll_D1ne!}')">בדוק תשובה</button>
-        <div class="feedback"></div>
+    <div class="question-card locked" id="stage2">
+        <h3>שלב 2: ניתוח קוד</h3>
+        <p>פענח את המחרוזת הבאה מקידוד Binary לטקסט: <b>01101000 01101001</b></p>
+        <input type="text" id="ans2" placeholder="הכנס את המילה המסתתרת...">
+        <button onclick="checkStep(2, 'hi')">שלח פיצוח</button>
+        <div class="status" id="status2"></div>
     </div>
 
+    <div class="question-card locked" id="stage3">
+        <h3>שלב 3: ה-Flag האחרון</h3>
+        <p>מהו ה-Port המוגדר כברירת מחדל עבור פרוטוקול HTTP?</p>
+        <input type="text" id="ans3" placeholder="מספר ה-Port...">
+        <button onclick="checkStep(3, '80')">סיום משימה</button>
+        <div class="status" id="status3"></div>
+    </div>
+
+    <div id="victory-message">
+        🏆 הגישה אושרה! כל הכבוד, האקרית. 🏆
+    </div>
 </div>
 
 <script>
-    function checkMultiple(qId, index, isCorrect) {
-        const card = document.getElementById(qId);
-        const options = card.querySelectorAll('li');
-        const feedback = card.querySelector('.feedback');
-        
-        options.forEach(opt => opt.classList.remove('correct', 'wrong'));
-        
-        if (isCorrect) {
-            options[index].classList.add('correct');
-            feedback.innerHTML = "✅ מצוין! SFTP משתמש ב-SSH להצפנה.";
-            feedback.style.color = "#28a745";
+    function checkStep(stage, correctAns, isMultiple = false) {
+        let userAns;
+        if (isMultiple) {
+            userAns = correctAns; // בשאלות אמריקאיות נשלח את התשובה ישירות
         } else {
-            options[index].classList.add('wrong');
-            feedback.innerHTML = "❌ לא נכון, נסי שנית.";
-            feedback.style.color = "#dc3545";
+            userAns = document.getElementById('ans' + stage).value.trim().toLowerCase();
         }
-    }
 
-    function checkOpen(qId, inputId, correctAns) {
-        const input = document.getElementById(inputId);
-        const feedback = document.querySelector(`#${qId} .feedback`);
-        
-        if (input.value.trim() === correctAns) {
-            feedback.innerHTML = "✅ כל הכבוד! פענחת את ה-Flag.";
-            feedback.style.color = "#28a745";
-            input.style.borderColor = "#28a745";
+        const status = document.getElementById('status' + stage);
+        const currentCard = document.getElementById('stage' + stage);
+
+        if (userAns === correctAns) {
+            status.innerHTML = "✅ הגישה אושרה לשלב הבא.";
+            currentCard.classList.remove('active');
+            currentCard.style.borderColor = "#00ff41";
+            
+            const nextStage = stage + 1;
+            const nextCard = document.getElementById('stage' + nextStage);
+            
+            if (nextCard) {
+                nextCard.classList.remove('locked');
+                nextCard.classList.add('active');
+                nextCard.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                document.getElementById('victory-message').style.display = 'block';
+            }
         } else {
-            feedback.innerHTML = "❌ תשובה שגויה, כדאי לבדוק שוב את הקידוד.";
-            feedback.style.color = "#dc3545";
-            input.style.borderColor = "#dc3545";
+            status.innerHTML = "❌ גישה נדחתה. נסי שוב.";
+            status.style.color = "#ff4141";
         }
     }
 </script>
