@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberQuest - חדר בריחה</title>
+    <title>CyberQuest - תרגול OSINT</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
-            --accent-color: #38bdf8; /* כחול בהיר מודרני */
+            --accent-color: #38bdf8;
             --text-color: #f1f5f9;
             --error-color: #ef4444;
             --success-color: #10b981;
@@ -26,11 +26,7 @@
             min-height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-        }
+        .container { width: 100%; max-width: 500px; padding: 20px; }
 
         .terminal-card {
             background: var(--card-bg);
@@ -53,12 +49,10 @@
         .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
 
         .content { padding: 30px; text-align: center; }
+        h2 { font-weight: 700; margin-bottom: 15px; color: var(--accent-color); }
+        p { font-family: 'Fira Code', monospace; font-size: 1.1em; line-height: 1.6; min-height: 60px; }
 
-        h2 { font-weight: 700; margin-bottom: 10px; color: var(--accent-color); }
-        p { font-family: 'Fira Code', monospace; font-size: 1.1em; line-height: 1.6; }
-
-        .input-group { margin-top: 25px; position: relative; }
-
+        /* כפתורים וקלט */
         input {
             width: 100%;
             padding: 12px 15px;
@@ -68,14 +62,11 @@
             color: white;
             font-family: 'Fira Code', monospace;
             box-sizing: border-box;
-            transition: 0.3s;
             text-align: center;
+            margin-bottom: 10px;
         }
 
-        input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-
         button {
-            margin-top: 20px;
             width: 100%;
             padding: 12px;
             background: var(--accent-color);
@@ -83,16 +74,22 @@
             border: none;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1em;
             cursor: pointer;
             transition: 0.3s;
+            margin-top: 10px;
+            font-size: 1.1rem;
         }
 
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-        button:disabled { background: #475569; cursor: not-allowed; transform: none; }
+        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .option-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--accent-color); color: var(--accent-color); width: 100%; margin-bottom: 8px; }
+        .option-btn:hover { background: var(--accent-color); color: var(--bg-color); }
 
-        .status-msg { margin-top: 15px; min-height: 24px; font-weight: bold; }
-        #timer { font-size: 1.5em; color: var(--error-color); margin-top: 10px; font-family: 'Fira Code', monospace; }
+        #timer { font-size: 2em; color: var(--error-color); font-family: 'Fira Code', monospace; margin-top: 10px; }
+        #msg { margin-top: 15px; font-weight: bold; }
+
+        /* הסתרת המשחק בהתחלה */
+        #gameArea { display: none; }
+        #welcomeArea { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -104,27 +101,38 @@
         <div class="terminal-header">
             <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
         </div>
-        <div class="content">
-            <h2 id="catTitle">מתחבר לשרת...</h2>
-            <p id="qText">טוען אתגרים מהמערכת...</p>
-            
-            <div class="input-group">
-                <input type="text" id="userAns" placeholder="הקלידו תשובה כאן..." autocomplete="off">
-                <button id="submitBtn" onclick="check()">בדיקת פריצה</button>
-            </div>
+        
+        <div class="content" id="welcomeArea">
+            <h2>משימת OSINT</h2>
+            <p>ברוכים הבאים לתרגול OSINT, לפניכם מספר אתגרים. כדי לעבור לשאלה הבאה יש צורך בפיתרון השאלה הנוכחית.</p>
+            <p style="font-size: 0.9em; color: var(--accent-color);">בהצלחה!</p>
+            <button onclick="startMission()">התחל משימה</button>
+        </div>
 
-            <div class="status-msg" id="msg"></div>
+        <div class="content" id="gameArea">
+            <h2 id="catTitle">מתחבר...</h2>
+            <p id="qText">טוען נתונים מהשרת...</p>
+            
+            <div id="dynamicInput"></div>
+
+            <div id="msg"></div>
             <div id="timer"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // הגדרות - הדביקי כאן את ה-URL שלך!
+    // חובה להחליף ב-URL שלך מ-Firebase!
     const BASE_URL = "https://your-project-id.firebaseio.com/"; 
 
     let questions = [];
     let currentIndex = 0;
+
+    function startMission() {
+        document.getElementById('welcomeArea').style.display = 'none';
+        document.getElementById('gameArea').style.display = 'block';
+        init(); // קורא לנתונים רק כשמתחילים
+    }
 
     async function init() {
         try {
@@ -133,32 +141,70 @@
             const qRes = await fetch(`${BASE_URL}questions.json`);
             const allQ = await qRes.json();
             
+            if (!settings || !allQ) {
+                document.getElementById('qText').innerText = "המערכת במצב המתנה. חכו להוראות מהמדריכה...";
+                return;
+            }
+
             questions = Object.values(allQ).filter(q => q.category === settings.activeCategory);
             document.getElementById('catTitle').innerText = settings.activeCategory;
-            showQuestion();
+            
+            if (questions.length === 0) {
+                document.getElementById('qText').innerText = "אין שאלות בקטגוריה זו כרגע.";
+            } else {
+                showQuestion();
+            }
         } catch (e) {
-            document.getElementById('qText').innerText = "שגיאת חיבור לבסיס הנתונים.";
+            document.getElementById('qText').innerText = "שגיאת תקשורת. וודאו חיבור לאינטרנט.";
         }
     }
 
     function showQuestion() {
+        const container = document.getElementById('dynamicInput');
+        const q = questions[currentIndex];
+        const msg = document.getElementById('msg');
+        
+        container.innerHTML = "";
+        msg.innerText = `משימה ${currentIndex + 1} מתוך ${questions.length}`;
+        msg.style.color = "var(--text-color)";
+
         if (currentIndex < questions.length) {
-            document.getElementById('qText').innerText = questions[currentIndex].text;
-            document.getElementById('msg').innerText = `משימה ${currentIndex + 1} מתוך ${questions.length}`;
+            document.getElementById('qText').innerText = q.text;
+
+            if (q.type === 'multiple') {
+                q.options.forEach(opt => {
+                    if (opt.trim() !== "") {
+                        const btn = document.createElement('button');
+                        btn.innerText = opt;
+                        btn.className = "option-btn";
+                        btn.onclick = () => check(opt);
+                        container.appendChild(btn);
+                    }
+                });
+            } else {
+                const input = document.createElement('input');
+                input.id = "userAns";
+                input.placeholder = "הקלידו את ה-Flag כאן...";
+                input.onkeydown = (e) => { if(e.key === 'Enter') check(input.value); };
+                
+                const btn = document.createElement('button');
+                btn.innerText = "אימות פתרון";
+                btn.onclick = () => check(input.value);
+                
+                container.appendChild(input);
+                container.appendChild(btn);
+            }
         } else {
-            document.getElementById('qText').innerText = "🏆 המערכת נפרצה בהצלחה! 🏆";
-            document.getElementById('userAns').style.display = "none";
-            document.getElementById('submitBtn').style.display = "none";
+            finishGame();
         }
     }
 
-    function check() {
-        const val = document.getElementById('userAns').value.trim();
-        if (val === questions[currentIndex].answer) {
+    function check(val) {
+        const correct = questions[currentIndex].answer;
+        if (val.trim().toLowerCase() === correct.toLowerCase()) {
             currentIndex++;
-            document.getElementById('userAns').value = "";
             document.getElementById('msg').style.color = "var(--success-color)";
-            document.getElementById('msg').innerText = "מעבר לשלב הבא...";
+            document.getElementById('msg').innerText = "✅ פתרון נכון! עוברים לשלב הבא...";
             setTimeout(showQuestion, 1000);
         } else {
             penalty();
@@ -167,30 +213,34 @@
 
     function penalty() {
         let timeLeft = 10;
-        const btn = document.getElementById('submitBtn');
-        const input = document.getElementById('userAns');
+        const container = document.getElementById('dynamicInput');
         const msg = document.getElementById('msg');
-        
-        btn.disabled = true;
-        input.disabled = true;
+        const timerDisplay = document.getElementById('timer');
+
+        container.style.pointerEvents = "none";
+        container.style.opacity = "0.5";
         msg.style.color = "var(--error-color)";
-        msg.innerText = "זוהתה חריגה! נעילה זמנית...";
+        msg.innerText = "❌ תשובה שגויה! המערכת ננעלה...";
         
         const interval = setInterval(() => {
-            document.getElementById('timer').innerText = `00:0${timeLeft}`.slice(-5);
+            timerDisplay.innerText = timeLeft;
             timeLeft--;
             if (timeLeft < 0) {
                 clearInterval(interval);
-                document.getElementById('timer').innerText = "";
-                btn.disabled = false;
-                input.disabled = false;
+                timerDisplay.innerText = "";
+                container.style.pointerEvents = "all";
+                container.style.opacity = "1";
                 msg.innerText = "";
-                input.focus();
             }
         }, 1000);
     }
 
-    init();
+    function finishGame() {
+        document.getElementById('catTitle').innerText = "המשימה הושלמה!";
+        document.getElementById('qText').innerText = "🏆 כל הכבוד! הצלחתם לפתור את כל אתגרי ה-OSINT.";
+        document.getElementById('dynamicInput').innerHTML = "";
+        document.getElementById('msg').innerText = "";
+    }
 </script>
 
 </body>
