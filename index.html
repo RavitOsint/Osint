@@ -24,8 +24,8 @@
     <script>
         let questions = [];
         let currentIndex = 0;
-        const DB_URL = "הדביקי_כאן_את_ה-URL_שלך/questions.json";
-        const SETTINGS_URL = "הדביקי_כאן_את_ה-URL_שלך/settings.json";
+        const DB_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/questions.json";
+        const SETTINGS_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/settings.json";
 
         async function init() {
             const settings = await fetch(SETTINGS_URL).then(r => r.json());
@@ -77,4 +77,5 @@
         init();
     </script>
 </body>
+
 </html>
