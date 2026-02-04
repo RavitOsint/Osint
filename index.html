@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תרגול סייבר - בית הספר לסייבר</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; color: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h1 { color: #00ff41; text-align: center; border-bottom: 2px solid #00ff41; padding-bottom: 10px; }
+        .question-card { background: #3d3d3d; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-right: 5px solid #00ff41; }
+        .options { list-style: none; padding: 0; }
+        .options li { margin: 10px 0; background: #4d4d4d; padding: 10px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .options li:hover { background: #5d5d5d; }
+        .options li.correct { background: #28a745 !important; color: white; }
+        .options li.wrong { background: #dc3545 !important; color: white; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #00ff41; background: #1a1a1a; color: #00ff41; box-sizing: border-box; }
+        button { background: #00ff41; color: #1a1a1a; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+        button:hover { background: #00cc33; }
+        .feedback { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>משימת תרגול סייבר #1</h1>
+
+    <div class="question-card" id="q1">
+        <h3>1. איזה פרוטוקול משמש להעברת קבצים בצורה מוצפנת?</h3>
+        <ul class="options">
+            <li onclick="checkMultiple('q1', 0, false)">HTTP</li>
+            <li onclick="checkMultiple('q1', 1, true)">SFTP</li>
+            <li onclick="checkMultiple('q1', 2, false)">FTP</li>
+            <li onclick="checkMultiple('q1', 3, false)">Telnet</li>
+        </ul>
+        <div class="feedback"></div>
+    </div>
+
+    <div class="question-card" id="q2">
+        <h3>2. שאלת אתגר: מצא את ה-Flag בקובץ המצורף (רמז: Base64)</h3>
+        <p style="font-size: 0.9em; color: #aaa;">קוד מוצפן: Q3liZXJTY2hvb2x7VzNsbF9EMW5lIX0=</p>
+        <input type="text" id="ans2" placeholder="הכנס את ה-Flag כאן...">
+        <button onclick="checkOpen('q2', 'ans2', 'CyberSchool{W3ll_D1ne!}')">בדוק תשובה</button>
+        <div class="feedback"></div>
+    </div>
+
+</div>
+
+<script>
+    function checkMultiple(qId, index, isCorrect) {
+        const card = document.getElementById(qId);
+        const options = card.querySelectorAll('li');
+        const feedback = card.querySelector('.feedback');
+        
+        options.forEach(opt => opt.classList.remove('correct', 'wrong'));
+        
+        if (isCorrect) {
+            options[index].classList.add('correct');
+            feedback.innerHTML = "✅ מצוין! SFTP משתמש ב-SSH להצפנה.";
+            feedback.style.color = "#28a745";
+        } else {
+            options[index].classList.add('wrong');
+            feedback.innerHTML = "❌ לא נכון, נסי שנית.";
+            feedback.style.color = "#dc3545";
+        }
+    }
+
+    function checkOpen(qId, inputId, correctAns) {
+        const input = document.getElementById(inputId);
+        const feedback = document.querySelector(`#${qId} .feedback`);
+        
+        if (input.value.trim() === correctAns) {
+            feedback.innerHTML = "✅ כל הכבוד! פענחת את ה-Flag.";
+            feedback.style.color = "#28a745";
+            input.style.borderColor = "#28a745";
+        } else {
+            feedback.innerHTML = "❌ תשובה שגויה, כדאי לבדוק שוב את הקידוד.";
+            feedback.style.color = "#dc3545";
+            input.style.borderColor = "#dc3545";
+        }
+    }
+</script>
+
+</body>
+</html>
