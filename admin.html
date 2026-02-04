@@ -2,36 +2,26 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>CyberQuest Admin - מערכת מלאה</title>
+    <title>CyberQuest Admin - ניהול תוכן</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --text-main: #0f172a; --error: #ef4444; }
+        :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --error: #ef4444; }
         body { font-family: 'Assistant', sans-serif; margin: 0; background-color: var(--main-bg); display: flex; min-height: 100vh; }
-        
-        /* מסך כניסה */
         #loginArea { position: fixed; inset: 0; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); transition: 0.3s; }
-        
-        /* אפקטים ללוגין */
+        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
         .shake { animation: shake 0.2s ease-in-out 0s 2; border: 2px solid var(--error) !important; }
-
-        /* מבנה כללי */
-        #adminContent { width: 100%; display: none; } /* מוסתר עד להתחברות */
-        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; padding: 25px; display: flex; flex-direction: column; }
+        #adminContent { width: 100%; display: none; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; padding: 25px; }
         .main-panel { flex: 1; padding: 40px; overflow-y: auto; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-
-        /* אלמנטים של טפסים */
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1rem; }
+        textarea { height: 100px; resize: vertical; }
         button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:hover { filter: brightness(1.1); }
         .btn-delete { background: var(--error); color: white; width: auto; padding: 5px 10px; font-size: 0.8rem; }
-
-        /* טבלה */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { text-align: right; padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        
+        th, td { text-align: right; padding: 12px; border-bottom: 1px solid #e2e8f0; white-space: pre-wrap; }
         .cat-tag { display: inline-block; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 6px; margin: 4px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
@@ -39,100 +29,88 @@
 
 <div id="loginArea">
     <div class="login-card" id="loginCard">
-        <h2 style="margin-top:0">CyberQuest Admin</h2>
+        <h2>CyberQuest Admin</h2>
         <div style="position: relative;">
             <input type="password" id="adminPass" placeholder="סיסמת ניהול">
-            <span id="togglePass" onclick="togglePasswordVisibility()" style="position: absolute; left: 10px; top: 22px; cursor: pointer;">👁️</span>
+            <span id="togglePass" onclick="togglePass()" style="position: absolute; left: 10px; top: 22px; cursor: pointer;">👁️</span>
         </div>
-        <p id="errorMsg" style="color: var(--error); font-size: 0.8rem; display: none; margin: 5px 0;">סיסמה שגויה, נסי שוב.</p>
-        <button onclick="login()">כניסה למערכת</button>
+        <p id="errorMsg" style="color: var(--error); font-size: 0.8rem; display: none;">סיסמה שגויה!</p>
+        <button onclick="login()">כניסה</button>
     </div>
 </div>
 
 <div id="adminContent">
-    <div class="sidebar">
-        <h2 style="color: var(--accent)">ניהול סייבר</h2>
-        <div class="card" style="background: rgba(255,255,255,0.05); color: white; border: none;">
-            <h4>📁 קטגוריות</h4>
-            <input id="newCatName" placeholder="שם קטגוריה חדשה" style="background: white;">
-            <button onclick="addCategory()" style="background: white; color: var(--sidebar-bg);">הוסף</button>
-            <div id="catListSidebar" style="margin-top: 15px;"></div>
+    <div style="display: flex; width: 100%;">
+        <div class="sidebar">
+            <h2 style="color: var(--accent)">ניהול סייבר</h2>
+            <div class="card" style="background: rgba(255,255,255,0.05); color: white; border: none;">
+                <h4>📁 קטגוריות</h4>
+                <input id="newCatName" placeholder="שם קטגוריה">
+                <button onclick="addCategory()" style="background: white;">הוסף</button>
+                <div id="catListSidebar" style="margin-top: 15px;"></div>
+            </div>
         </div>
-    </div>
-
-    <div class="main-panel">
-        <h1>לוח בקרה למדריכה</h1>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div class="card">
-                <h2>➕ הוספת שאלה</h2>
-                <select id="qCatSelect"><option>טוען קטגוריות...</option></select>
-                <select id="qType" onchange="document.getElementById('multOptions').style.display = (this.value=='multiple'?'block':'none')">
-                    <option value="open">שאלה פתוחה (Flag)</option>
-                    <option value="multiple">שאלה אמריקאית</option>
-                </select>
-                <input id="qText" placeholder="תוכן השאלה">
-                <div id="multOptions" style="display:none">
-                    <input id="opt1" placeholder="אופציה 1"><input id="opt2" placeholder="אופציה 2">
-                    <input id="opt3" placeholder="אופציה 3"><input id="opt4" placeholder="אופציה 4">
+        <div class="main-panel">
+            <h1>לוח בקרה</h1>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h2>➕ הוספת שאלה</h2>
+                    <select id="qCatSelect"></select>
+                    <select id="qType" onchange="document.getElementById('multOptions').style.display = (this.value=='multiple'?'block':'none')">
+                        <option value="open">שאלה פתוחה (Flag)</option>
+                        <option value="multiple">שאלה אמריקאית</option>
+                    </select>
+                    <textarea id="qText" placeholder="תוכן השאלה - ניתן לרדת שורות..."></textarea>
+                    <div id="multOptions" style="display:none">
+                        <input id="opt1" placeholder="אופציה 1"><input id="opt2" placeholder="אופציה 2">
+                        <input id="opt3" placeholder="אופציה 3"><input id="opt4" placeholder="אופציה 4">
+                    </div>
+                    <input id="qAns" placeholder="התשובה הנכונה">
+                    <button onclick="addQuestion()">שמור שאלה</button>
                 </div>
-                <input id="qAns" placeholder="התשובה הנכונה">
-                <button onclick="addQuestion()">שמור שאלה</button>
+                <div class="card">
+                    <h2>📺 שידור חי</h2>
+                    <p>בחר קטגוריה לשידור:</p>
+                    <select id="activeCatSelect"></select>
+                    <button onclick="setActive()" style="background: var(--sidebar-bg); color: white;">הפעל שידור</button>
+                </div>
             </div>
-
             <div class="card">
-                <h2>📺 שידור חי</h2>
-                <p>בחר קטגוריה שתוצג לחניכים עכשיו:</p>
-                <select id="activeCatSelect"></select>
-                <button onclick="setActive()" style="background: var(--sidebar-bg); color: white;">הפעל שידור לקטגוריה זו</button>
+                <h2>📚 מאגר שאלות</h2>
+                <table>
+                    <thead><tr><th>קטגוריה</th><th>שאלה</th><th>תשובה</th><th>פעולה</th></tr></thead>
+                    <tbody id="questionsTable"></tbody>
+                </table>
             </div>
-        </div>
-
-        <div class="card">
-            <h2>📚 מאגר השאלות שלך</h2>
-            <table>
-                <thead><tr><th>קטגוריה</th><th>שאלה</th><th>תשובה</th><th>פעולה</th></tr></thead>
-                <tbody id="questionsTable"></tbody>
-            </table>
         </div>
     </div>
 </div>
 
 <script>
-    // הגדרות - חובה להחליף ב-URL שלך מ-Firebase!
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; // <--- החליפי בכתובת שלך!
     const MASTER_PASSWORD = "zigi2026";
 
-    // לוגיקה של כניסה
-    function togglePasswordVisibility() {
+    function togglePass() {
         const p = document.getElementById('adminPass');
-        const t = document.getElementById('togglePass');
         p.type = p.type === 'password' ? 'text' : 'password';
-        t.innerText = p.type === 'password' ? '👁️' : '🔒';
     }
 
     function login() {
-        const pass = document.getElementById('adminPass').value;
-        const card = document.getElementById('loginCard');
-        if (pass === MASTER_PASSWORD) {
+        if(document.getElementById('adminPass').value === MASTER_PASSWORD) {
             document.getElementById('loginArea').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'flex';
+            document.getElementById('adminContent').style.display = 'block';
             loadData();
         } else {
-            card.classList.add('shake');
+            document.getElementById('loginCard').classList.add('shake');
             document.getElementById('errorMsg').style.display = 'block';
-            setTimeout(() => card.classList.remove('shake'), 500);
+            setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 500);
         }
     }
 
-    // ניהול נתונים
     async function loadData() {
         const cRes = await fetch(`${BASE_URL}categories.json`);
         const cData = await cRes.json();
-        const qCat = document.getElementById('qCatSelect');
-        const aCat = document.getElementById('activeCatSelect');
-        const side = document.getElementById('catListSidebar');
-        
+        const qCat = document.getElementById('qCatSelect'), aCat = document.getElementById('activeCatSelect'), side = document.getElementById('catListSidebar');
         qCat.innerHTML = ""; aCat.innerHTML = ""; side.innerHTML = "";
         for (let id in cData) {
             const name = cData[id].name;
@@ -140,18 +118,12 @@
             aCat.innerHTML += `<option value="${name}">${name}</option>`;
             side.innerHTML += `<div class="cat-tag">${name} <span style="cursor:pointer" onclick="deleteItem('categories/${id}')">×</span></div>`;
         }
-
         const qRes = await fetch(`${BASE_URL}questions.json`);
         const qData = await qRes.json();
         const tbody = document.getElementById('questionsTable');
         tbody.innerHTML = "";
         for (let id in qData) {
-            tbody.innerHTML += `<tr>
-                <td><b>${qData[id].category}</b></td>
-                <td>${qData[id].text}</td>
-                <td><code>${qData[id].answer}</code></td>
-                <td><button class="btn-delete" onclick="deleteItem('questions/${id}')">מחק</button></td>
-            </tr>`;
+            tbody.innerHTML += `<tr><td>${qData[id].category}</td><td>${qData[id].text}</td><td>${qData[id].answer}</td><td><button class="btn-delete" onclick="deleteItem('questions/${id}')">מחק</button></td></tr>`;
         }
     }
 
@@ -159,37 +131,25 @@
         const name = document.getElementById('newCatName').value.trim();
         if(!name) return;
         await fetch(`${BASE_URL}categories.json`, { method: 'POST', body: JSON.stringify({name}) });
-        document.getElementById('newCatName').value = "";
-        loadData();
+        document.getElementById('newCatName').value = ""; loadData();
     }
 
     async function addQuestion() {
         const type = document.getElementById('qType').value;
-        const data = {
-            category: document.getElementById('qCatSelect').value,
-            type: type,
-            text: document.getElementById('qText').value,
-            answer: document.getElementById('qAns').value.trim()
-        };
-        if(type === 'multiple') {
-            data.options = [document.getElementById('opt1').value, document.getElementById('opt2').value, 
-                            document.getElementById('opt3').value, document.getElementById('opt4').value];
-        }
+        const data = { category: document.getElementById('qCatSelect').value, type, text: document.getElementById('qText').value, answer: document.getElementById('qAns').value.trim() };
+        if(type === 'multiple') data.options = [document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value, document.getElementById('opt4').value];
         await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
-        loadData();
+        document.getElementById('qText').value = ""; document.getElementById('qAns').value = ""; loadData();
     }
 
     async function setActive() {
         const cat = document.getElementById('activeCatSelect').value;
         await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify({activeCategory: cat}) });
-        alert("שידור עודכן לקטגוריה: " + cat);
+        alert("שידור עודכן!");
     }
 
     async function deleteItem(path) {
-        if(confirm("למחוק פריט זה?")) {
-            await fetch(`${BASE_URL}${path}.json`, { method: 'DELETE' });
-            loadData();
-        }
+        if(confirm("למחוק?")) { await fetch(`${BASE_URL}${path}.json`, { method: 'DELETE' }); loadData(); }
     }
 </script>
 </body>
