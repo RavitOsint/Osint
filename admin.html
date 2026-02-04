@@ -2,12 +2,18 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>CyberQuest Admin - Control Center</title>
+    <title>CyberQuest Admin - המערכת המלאה</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --error: #ef4444; --success: #10b981; }
         body { font-family: 'Assistant', sans-serif; margin: 0; display: flex; background: var(--main-bg); min-height: 100vh; }
         
+        /* Login Area */
+        #loginArea { position: fixed; inset: 0; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; transition: 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        .shake { animation: shake 0.2s ease-in-out 0s 2; border: 2px solid var(--error) !important; }
+
         /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100vh; }
         .tab-btn { display: block; width: 100%; padding: 15px; margin-bottom: 8px; border: none; background: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 8px; font-size: 1rem; transition: 0.3s; }
@@ -19,38 +25,37 @@
         .hidden { display: none; }
         
         /* Forms */
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 1rem; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
         textarea { height: 100px; resize: vertical; white-space: pre-wrap; }
-        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; }
         button:hover { opacity: 0.9; }
         
         /* Tables */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; }
-        th, td { text-align: right; padding: 15px; border-bottom: 1px solid #f1f5f9; }
-        th { background: #f8fafc; color: #64748b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { text-align: right; padding: 15px; border-bottom: 1px solid #f1f5f9; white-space: pre-wrap; }
         .score-v { color: var(--success); font-weight: bold; }
         .score-x { color: var(--error); font-weight: bold; }
-        
-        /* Login */
-        #loginArea { position: fixed; inset: 0; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; }
     </style>
 </head>
 <body>
 
 <div id="loginArea">
-    <div class="login-card">
-        <h2>כניסת מנהלת</h2>
-        <input type="password" id="adminPass" placeholder="סיסמה">
-        <button onclick="login()">כניסה</button>
+    <div class="login-card" id="loginCard">
+        <h2 style="margin-top:0">כניסת מנהלת</h2>
+        <div style="position: relative; width: 100%;">
+            <input type="password" id="adminPass" placeholder="סיסמת ניהול" style="padding-left: 45px;">
+            <span id="togglePass" onclick="togglePasswordVisibility()" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem;">👁️</span>
+        </div>
+        <p id="errorMsg" style="color: var(--error); font-size: 0.85rem; margin-top: 5px; display: none;">סיסמה שגויה, נסי שוב.</p>
+        <button onclick="login()" style="margin-top: 15px;">כניסה למערכת</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <h2 style="color: var(--accent); margin-bottom: 30px;">CyberQuest Center</h2>
-    <button class="tab-btn active" onclick="showTab('qTab')">📚 ניהול שאלות</button>
-    <button class="tab-btn" onclick="showTab('gradingTab')">🎓 ציוני חניכים</button>
-    <button class="tab-btn" onclick="showTab('settingsTab')">📺 שידור והגדרות</button>
+    <h2 style="color: var(--accent); margin-bottom: 30px;">CyberQuest</h2>
+    <button class="tab-btn active" onclick="showTab('qTab', this)">📚 ניהול שאלות</button>
+    <button class="tab-btn" onclick="showTab('gradingTab', this)">🎓 ציוני חניכים</button>
+    <button class="tab-btn" onclick="showTab('settingsTab', this)">📺 שידור והגדרות</button>
 </div>
 
 <div class="main-panel">
@@ -58,15 +63,15 @@
         <div class="card">
             <h2>➕ הוספת שאלה חדשה</h2>
             <select id="qCatSelect"></select>
-            <select id="qType" onchange="document.getElementById('optArea').classList.toggle('hidden', this.value!=='multiple')">
+            <select id="qType" onchange="toggleOptions()">
                 <option value="open">שאלה פתוחה (Flag)</option>
                 <option value="multiple">שאלה אמריקאית</option>
             </select>
-            <textarea id="qText" placeholder="תוכן השאלה (ניתן לרדת שורות)"></textarea>
+            <textarea id="qText" placeholder="תוכן השאלה..."></textarea>
             
             <div id="optArea" class="hidden">
                 <div id="ansList"></div>
-                <button onclick="addOptionField()" style="background:#e2e8f0; color:#475569; margin-bottom:10px;">+ הוסף אופציה לתשובה</button>
+                <button onclick="addOptionField()" style="background:#e2e8f0; color:#475569; width:auto; margin-bottom:10px;">+ הוסף אופציה</button>
             </div>
             
             <input id="qAns" placeholder="התשובה הנכונה">
@@ -76,9 +81,9 @@
         <div class="card">
             <h2>🔍 מאגר שאלות</h2>
             <select id="filterCat" onchange="loadQuestions()"><option value="all">כל הקטגוריות</option></select>
-            <table id="qTable">
+            <table>
                 <thead><tr><th>שאלה</th><th>תשובה</th><th>פעולות</th></tr></thead>
-                <tbody></tbody>
+                <tbody id="qTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -87,7 +92,7 @@
         <div class="card">
             <h2>📊 תוצאות ובדיקת מבחנים</h2>
             <table>
-                <thead><tr><th>חניך</th><th>שאלה</th><th>תשובה שנתנה</th><th>תוצאה</th><th>ניקוד</th></tr></thead>
+                <thead><tr><th>חניך</th><th>שאלה</th><th>תשובה</th><th>תוצאה</th><th>ניקוד</th></tr></thead>
                 <tbody id="subTable"></tbody>
             </table>
         </div>
@@ -96,9 +101,8 @@
     <div id="settingsTab" class="tab-content hidden">
         <div class="card">
             <h2>📺 שידור פעיל</h2>
-            <p>בחר קטגוריה להצגה לחניכים כרגע:</p>
             <select id="activeCatSelect"></select>
-            <button onclick="setActive()">הפעל שידור חי</button>
+            <button onclick="setActive()">הפעל קטגוריה לחניכים</button>
         </div>
         <div class="card">
             <h2>📁 ניהול קטגוריות</h2>
@@ -109,26 +113,52 @@
 </div>
 
 <script>
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; // <--- להחליף בכתובת שלך!
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
     const PASS = "zigi2026";
 
-    function login() { if(document.getElementById('adminPass').value === PASS) { document.getElementById('loginArea').classList.add('hidden'); loadAll(); } }
+    // לוגיקת כניסה
+    function togglePasswordVisibility() {
+        const p = document.getElementById('adminPass');
+        const i = document.getElementById('togglePass');
+        p.type = p.type === 'password' ? 'text' : 'password';
+        i.innerText = p.type === 'password' ? '👁️' : '🔒';
+    }
 
-    function showTab(id) {
+    function login() {
+        const p = document.getElementById('adminPass');
+        const c = document.getElementById('loginCard');
+        if(p.value === PASS) {
+            document.getElementById('loginArea').classList.add('hidden');
+            loadAll();
+        } else {
+            c.classList.add('shake');
+            document.getElementById('errorMsg').style.display = 'block';
+            p.value = "";
+            setTimeout(() => c.classList.remove('shake'), 500);
+        }
+    }
+
+    // ניווט
+    function showTab(id, btn) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.remove('hidden');
-        event.target.classList.add('active');
+        btn.classList.add('active');
         if(id === 'gradingTab') loadSubmissions();
     }
 
+    // ניהול שאלות אמריקאיות
+    function toggleOptions() {
+        document.getElementById('optArea').classList.toggle('hidden', document.getElementById('qType').value !== 'multiple');
+    }
     function addOptionField() {
-        const input = document.createElement('input');
-        input.className = "opt-input";
-        input.placeholder = "אופציה נוספת...";
-        document.getElementById('ansList').appendChild(input);
+        const i = document.createElement('input');
+        i.className = "opt-input";
+        i.placeholder = "אופציה...";
+        document.getElementById('ansList').appendChild(i);
     }
 
+    // תקשורת Firebase
     async function loadAll() {
         const res = await fetch(`${BASE_URL}categories.json`);
         const data = await res.json();
@@ -157,11 +187,11 @@
         const res = await fetch(`${BASE_URL}questions.json`);
         const data = await res.json();
         const filter = document.getElementById('filterCat').value;
-        const tbody = document.querySelector('#qTable tbody');
+        const tbody = document.getElementById('qTableBody');
         tbody.innerHTML = "";
         for(let id in data) {
             if(filter !== 'all' && data[id].category !== filter) continue;
-            tbody.innerHTML += `<tr><td style="white-space:pre-wrap">${data[id].text}</td><td>${data[id].answer}</td><td><button onclick="del('questions/${id}')">מחק</button></td></tr>`;
+            tbody.innerHTML += `<tr><td>${data[id].text}</td><td>${data[id].answer}</td><td><button onclick="del('questions/${id}')" style="width:auto; background:#ff4444; color:white;">מחק</button></td></tr>`;
         }
     }
 
@@ -174,16 +204,16 @@
             const s = data[id];
             tbody.innerHTML += `<tr>
                 <td>${s.student}</td>
-                <td>${s.questionText.substring(0,20)}...</td>
+                <td>${s.questionText.substring(0,30)}...</td>
                 <td>${s.userAnswer}</td>
                 <td class="${s.isCorrect?'score-v':'score-x'}">${s.isCorrect?'נכון':'שגוי'}</td>
-                <td><input type="number" value="${s.score||''}" onchange="setScore('${id}', this.value)" style="width:60px"></td>
+                <td><input type="number" value="${s.score||''}" onchange="setScore('${id}', this.value)" style="width:60px; margin:0;"></td>
             </tr>`;
         }
     }
 
     async function setScore(id, val) { await fetch(`${BASE_URL}submissions/${id}/score.json`, { method: 'PUT', body: JSON.stringify(val) }); }
-    async function setActive() { await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify({activeCategory: document.getElementById('activeCatSelect').value}) }); alert("שודר!"); }
+    async function setActive() { await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify({activeCategory: document.getElementById('activeCatSelect').value}) }); alert("שודר לחניכים!"); }
     async function addCat() { await fetch(`${BASE_URL}categories.json`, { method: 'POST', body: JSON.stringify({name: document.getElementById('newCatName').value}) }); loadAll(); }
     async function del(path) { if(confirm('למחוק?')) { await fetch(`${BASE_URL}${path}.json`, { method: 'DELETE' }); loadQuestions(); } }
 </script>
