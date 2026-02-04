@@ -2,79 +2,196 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>משימת סייבר - חניך</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - חדר בריחה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; text-align: center; padding: 50px; }
-        .box { border: 2px solid #00ff41; padding: 30px; display: inline-block; min-width: 300px; }
-        input { background: black; color: #00ff41; border: 1px solid #00ff41; padding: 10px; margin: 10px; }
-        .error { color: #ff4141; font-weight: bold; }
-        #timer { font-size: 2em; color: #ff4141; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8; /* כחול בהיר מודרני */
+            --text-color: #f1f5f9;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Assistant', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .terminal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .terminal-header {
+            background: rgba(0,0,0,0.2);
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+
+        .content { padding: 30px; text-align: center; }
+
+        h2 { font-weight: 700; margin-bottom: 10px; color: var(--accent-color); }
+        p { font-family: 'Fira Code', monospace; font-size: 1.1em; line-height: 1.6; }
+
+        .input-group { margin-top: 25px; position: relative; }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Fira Code', monospace;
+            box-sizing: border-box;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        button:disabled { background: #475569; cursor: not-allowed; transform: none; }
+
+        .status-msg { margin-top: 15px; min-height: 24px; font-weight: bold; }
+        #timer { font-size: 1.5em; color: var(--error-color); margin-top: 10px; font-family: 'Fira Code', monospace; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="game" class="box">
-        <h2 id="catTitle">טוען קטגוריה...</h2>
-        <p id="qText">מחכה למדריכה...</p>
-        <input id="userAns" placeholder="הכנס תשובה">
-        <button id="submitBtn" onclick="check()">שלח</button>
-        <p id="msg"></p>
-        <div id="timer"></div>
+
+<div class="container">
+    <div class="terminal-card">
+        <div class="terminal-header">
+            <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+        </div>
+        <div class="content">
+            <h2 id="catTitle">מתחבר לשרת...</h2>
+            <p id="qText">טוען אתגרים מהמערכת...</p>
+            
+            <div class="input-group">
+                <input type="text" id="userAns" placeholder="הקלידו תשובה כאן..." autocomplete="off">
+                <button id="submitBtn" onclick="check()">בדיקת פריצה</button>
+            </div>
+
+            <div class="status-msg" id="msg"></div>
+            <div id="timer"></div>
+        </div>
     </div>
+</div>
 
-    <script>
-        let questions = [];
-        let currentIndex = 0;
-        const DB_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/questions.json";
-        const SETTINGS_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/settings.json";
+<script>
+    // הגדרות - הדביקי כאן את ה-URL שלך!
+    const BASE_URL = "https://your-project-id.firebaseio.com/"; 
 
-        async function init() {
-            const settings = await fetch(SETTINGS_URL).then(r => r.json());
-            const allQ = await fetch(DB_URL).then(r => r.json());
+    let questions = [];
+    let currentIndex = 0;
+
+    async function init() {
+        try {
+            const settingsRes = await fetch(`${BASE_URL}settings.json`);
+            const settings = await settingsRes.json();
+            const qRes = await fetch(`${BASE_URL}questions.json`);
+            const allQ = await qRes.json();
             
-            // סינון שאלות לפי הקטגוריה שהמדריכה בחרה
             questions = Object.values(allQ).filter(q => q.category === settings.activeCategory);
-            document.getElementById('catTitle').innerText = "קטגוריה: " + settings.activeCategory;
+            document.getElementById('catTitle').innerText = settings.activeCategory;
             showQuestion();
+        } catch (e) {
+            document.getElementById('qText').innerText = "שגיאת חיבור לבסיס הנתונים.";
         }
+    }
 
-        function showQuestion() {
-            if (currentIndex < questions.length) {
-                document.getElementById('qText').innerText = questions[currentIndex].text;
-                document.getElementById('msg').innerText = `שאלה ${currentIndex + 1} מתוך ${questions.length}`;
-            } else {
-                document.getElementById('game').innerHTML = "<h1>🏆 המשימה הושלמה!</h1>";
+    function showQuestion() {
+        if (currentIndex < questions.length) {
+            document.getElementById('qText').innerText = questions[currentIndex].text;
+            document.getElementById('msg').innerText = `משימה ${currentIndex + 1} מתוך ${questions.length}`;
+        } else {
+            document.getElementById('qText').innerText = "🏆 המערכת נפרצה בהצלחה! 🏆";
+            document.getElementById('userAns').style.display = "none";
+            document.getElementById('submitBtn').style.display = "none";
+        }
+    }
+
+    function check() {
+        const val = document.getElementById('userAns').value.trim();
+        if (val === questions[currentIndex].answer) {
+            currentIndex++;
+            document.getElementById('userAns').value = "";
+            document.getElementById('msg').style.color = "var(--success-color)";
+            document.getElementById('msg').innerText = "מעבר לשלב הבא...";
+            setTimeout(showQuestion, 1000);
+        } else {
+            penalty();
+        }
+    }
+
+    function penalty() {
+        let timeLeft = 10;
+        const btn = document.getElementById('submitBtn');
+        const input = document.getElementById('userAns');
+        const msg = document.getElementById('msg');
+        
+        btn.disabled = true;
+        input.disabled = true;
+        msg.style.color = "var(--error-color)";
+        msg.innerText = "זוהתה חריגה! נעילה זמנית...";
+        
+        const interval = setInterval(() => {
+            document.getElementById('timer').innerText = `00:0${timeLeft}`.slice(-5);
+            timeLeft--;
+            if (timeLeft < 0) {
+                clearInterval(interval);
+                document.getElementById('timer').innerText = "";
+                btn.disabled = false;
+                input.disabled = false;
+                msg.innerText = "";
+                input.focus();
             }
-        }
+        }, 1000);
+    }
 
-        function check() {
-            const val = document.getElementById('userAns').value;
-            if (val === questions[currentIndex].answer) {
-                currentIndex++;
-                document.getElementById('userAns').value = "";
-                showQuestion();
-            } else {
-                penalty();
-            }
-        }
+    init();
+</script>
 
-        function penalty() {
-            let timeLeft = 10;
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('msg').innerText = "תשובה שגויה! המערכת ננעלה...";
-            
-            const interval = setInterval(() => {
-                document.getElementById('timer').innerText = timeLeft;
-                timeLeft--;
-                if (timeLeft < 0) {
-                    clearInterval(interval);
-                    document.getElementById('timer').innerText = "";
-                    document.getElementById('submitBtn').disabled = false;
-                    document.getElementById('msg').innerText = "";
-                }
-            }, 1000);
-        }
-
-        init();
-    </script>
 </body>
 </html>
