@@ -92,13 +92,16 @@
 
     // --- ניהול כניסה וטאבים ---
     function login() {
-        const p = document.getElementById('adminPass').value;
+      /*  const p = document.getElementById('adminPass').value;
         if(p === PASS) {
             document.getElementById('loginArea').classList.add('hidden');
             loadAll();
         } else {
             document.getElementById('errorMsg').style.display = 'block';
-        }
+        }*/
+        // כניסה ללא בדיקה - רק כדי לראות אם הטאבים עובדים
+    document.getElementById('loginArea').style.display = 'none';
+    loadAll();
     }
 
     function showTab(id, btn) {
@@ -206,3 +209,4 @@
 </script>
 </body>
 </html>
+
