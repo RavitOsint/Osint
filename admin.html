@@ -63,16 +63,16 @@
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h1 style="color:var(--accent); margin-bottom:10px;">CyberQuest</h1>
+        <h1 style="color:var(--accent); margin-bottom:10px;">מערכת ניהול</h1>
         <p style="opacity:0.7">Admin Terminal v3.0</p>
         <input type="password" id="passInput" placeholder="Password" onkeypress="if(event.key==='Enter') checkPass()">
-        <button onclick="checkPass()" style="width: 100%; margin-top: 15px;">AUTHENTICATE</button>
+        <button onclick="checkPass()" style="width: 100%; margin-top: 15px;">כניסה</button>
     </div>
 </div>
 
 <div id="adminPanel" class="hidden">
     <div class="sidebar">
-        <h2 style="color:var(--accent); text-align:center; letter-spacing: 2px;">COMMAND</h2>
+        <h2 style="color:var(--accent); text-align:center; letter-spacing: 2px;">ניתוב</h2>
         <hr style="opacity:0.1; margin-bottom:20px;">
         <button class="tab-btn active" onclick="showTab('qAddTab', this)">➕ הוספת שאלה</button>
         <button class="tab-btn" onclick="showTab('manageQsTab', this)">📝 ניהול שאלות</button>
@@ -404,4 +404,5 @@
 </script>
 </body>
 </html>
+
 
