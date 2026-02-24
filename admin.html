@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
-    <title>CyberQuest Admin - מערכת מלאה</title>
+    <title>CyberQuest Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --error: #ef4444; --success: #10b981; }
+        :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --error: #ef4444; }
         body { font-family: 'Assistant', sans-serif; margin: 0; display: flex; background: var(--main-bg); min-height: 100vh; }
-        #loginArea { position: fixed; inset: 0; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100vh; }
-        .tab-btn { display: block; width: 100%; padding: 15px; margin-bottom: 8px; border: none; background: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 8px; font-size: 1rem; transition: 0.3s; }
+        #loginArea { position: fixed; inset: 0; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: center; z-index: 3000; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100vh; z-index: 100; }
+        .tab-btn { display: block; width: 100%; padding: 15px; margin-bottom: 8px; border: none; background: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 8px; }
         .tab-btn.active { background: var(--accent); color: var(--sidebar-bg); font-weight: bold; }
-        .main-panel { margin-right: 260px; flex: 1; padding: 40px; }
+        .main-panel { margin-right: 260px; flex: 1; padding: 40px; min-height: 100vh; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .hidden { display: none; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; }
-        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .hidden { display: none !important; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; }
+        button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        table { width: 100%; border-collapse: collapse; background: white; }
         th, td { text-align: right; padding: 12px; border-bottom: 1px solid #f1f5f9; }
-        .score-v { color: var(--success); font-weight: bold; }
-        .score-x { color: var(--error); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -30,30 +28,29 @@
     <div class="login-card">
         <h2>כניסת מנהלת</h2>
         <input type="password" id="adminPass" placeholder="סיסמת ניהול">
-        <p id="errorMsg" style="color: var(--error); display: none; font-size: 0.9rem;">סיסמה שגויה, נסי שוב.</p>
-        <button onclick="login()">כניסה למערכת</button>
+        <p id="errorMsg" style="color: var(--error); display: none;">סיסמה שגויה</p>
+        <button onclick="login()">כניסה</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <h2 style="color: var(--accent);">CyberQuest Admin</h2>
+    <h2>CyberQuest</h2>
     <button class="tab-btn active" onclick="showTab('qTab', this)">📚 ניהול שאלות</button>
-    <button class="tab-btn" onclick="showTab('gradingTab', this)">🎓 ציוני חניכים</button>
-    <button class="tab-btn" onclick="showTab('settingsTab', this)">📺 שידור והגדרות</button>
+    <button class="tab-btn" onclick="showTab('gradingTab', this)">🎓 ציונים</button>
+    <button class="tab-btn" onclick="showTab('settingsTab', this)">⚙️ הגדרות</button>
 </div>
 
 <div class="main-panel">
     <div id="qTab" class="tab-content">
         <div class="card">
-            <h2>➕ הוספת שאלה חדשה</h2>
-            <select id="qCatSelect"><option value="">טוען קטגוריות...</option></select>
+            <h2>➕ הוספת שאלה</h2>
+            <select id="qCatSelect"><option value="">בחרי קטגוריה...</option></select>
             <textarea id="qText" placeholder="תוכן השאלה..."></textarea>
-            <input id="qAns" placeholder="התשובה הנכונה (או Flag)">
-            <button onclick="saveQuestion()">שמור שאלה במאגר</button>
+            <input id="qAns" placeholder="תשובה">
+            <button onclick="saveQuestion()">שמור שאלה</button>
         </div>
         <div class="card">
-            <h2>🔍 מאגר שאלות קיימות</h2>
-            <select id="filterCat" onchange="loadQuestions()"><option value="all">כל הקטגוריות</option></select>
+            <h2>🔍 מאגר</h2>
             <table>
                 <thead><tr><th>שאלה</th><th>תשובה</th><th>פעולות</th></tr></thead>
                 <tbody id="qTableBody"></tbody>
@@ -62,25 +59,13 @@
     </div>
 
     <div id="gradingTab" class="tab-content hidden">
-        <div class="card">
-            <h2>📊 תשובות חניכים</h2>
-            <table>
-                <thead><tr><th>חניך</th><th>שאלה</th><th>תשובה</th><th>תוצאה</th><th>ניקוד</th></tr></thead>
-                <tbody id="subTable"></tbody>
-            </table>
-        </div>
+        <div class="card"><h2>📊 ציונים ותשובות</h2><div id="subTable">טוען נתונים...</div></div>
     </div>
 
     <div id="settingsTab" class="tab-content hidden">
         <div class="card">
-            <h2>📺 שידור קטגוריה פעילה</h2>
-            <p>בחרי איזו קטגוריה החניכים יראו כרגע:</p>
-            <select id="activeCatSelect"></select>
-            <button onclick="setActive()">הפעל קטגוריה לחניכים</button>
-        </div>
-        <div class="card">
-            <h2>📁 ניהול קטגוריות</h2>
-            <input id="newCatName" placeholder="שם קטגוריה חדשה">
+            <h2>📁 קטגוריות</h2>
+            <input id="newCatName" placeholder="שם קטגוריה">
             <button onclick="addCat()">הוסף קטגוריה</button>
         </div>
     </div>
@@ -90,18 +75,14 @@
     const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
     const PASS = "zigi2026";
 
-    // --- ניהול כניסה וטאבים ---
     function login() {
-      /*  const p = document.getElementById('adminPass').value;
+        const p = document.getElementById('adminPass').value;
         if(p === PASS) {
             document.getElementById('loginArea').classList.add('hidden');
             loadAll();
         } else {
             document.getElementById('errorMsg').style.display = 'block';
-        }*/
-        // כניסה ללא בדיקה - רק כדי לראות אם הטאבים עובדים
-    document.getElementById('loginArea').style.display = 'none';
-    loadAll();
+        }
     }
 
     function showTab(id, btn) {
@@ -109,99 +90,63 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.remove('hidden');
         btn.classList.add('active');
-        if(id === 'gradingTab') loadSubmissions();
     }
 
-    // --- תקשורת עם Firebase ---
     async function loadAll() {
         try {
             const res = await fetch(`${BASE_URL}categories.json`);
             const data = await res.json();
             
-            ['qCatSelect', 'activeCatSelect', 'filterCat'].forEach(sId => {
+            const selects = ['qCatSelect'];
+            selects.forEach(sId => {
                 const s = document.getElementById(sId);
-                s.innerHTML = sId === 'filterCat' ? '<option value="all">כל הקטגוריות</option>' : '';
-                for(let id in data) {
-                    s.innerHTML += `<option value="${data[id].name}">${data[id].name}</option>`;
+                s.innerHTML = '<option value="">בחרי קטגוריה...</option>';
+                if(data) {
+                    for(let id in data) s.innerHTML += `<option value="${data[id].name}">${data[id].name}</option>`;
                 }
             });
             loadQuestions();
-        } catch(e) { console.error("טעינה נכשלה", e); }
+        } catch(e) { console.error(e); }
     }
 
     async function addCat() {
         const name = document.getElementById('newCatName').value;
         if(!name) return;
         await fetch(`${BASE_URL}categories.json`, { method: 'POST', body: JSON.stringify({name}) });
+        alert("קטגוריה נוספה!");
         document.getElementById('newCatName').value = "";
         loadAll();
-        alert("הקטגוריה נוספה!");
     }
 
     async function saveQuestion() {
-        const data = {
-            category: document.getElementById('qCatSelect').value,
-            text: document.getElementById('qText').value,
-            answer: document.getElementById('qAns').value.trim()
-        };
-        if(!data.category || !data.text) return alert("מלאי את כל השדות");
-        
-        await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
+        const cat = document.getElementById('qCatSelect').value;
+        const text = document.getElementById('qText').value;
+        const answer = document.getElementById('qAns').value;
+        if(!cat || !text) return alert("מלאי קטגוריה ושאלה");
+
+        await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify({category: cat, text, answer}) });
+        alert("שאלה נשמרה!");
         document.getElementById('qText').value = "";
         document.getElementById('qAns').value = "";
         loadQuestions();
-        alert("השאלה נשמרה!");
     }
 
     async function loadQuestions() {
-        const res = await fetch(`${BASE_URL}questions.json`);
-        const data = await res.json();
-        const filter = document.getElementById('filterCat').value;
-        const tbody = document.getElementById('qTableBody');
-        tbody.innerHTML = "";
-        
-        for(let id in data) {
-            if(filter !== 'all' && data[id].category !== filter) continue;
-            tbody.innerHTML += `
-                <tr>
-                    <td>${data[id].text}</td>
-                    <td>${data[id].answer}</td>
-                    <td><button onclick="del('questions/${id}')" style="background:red; color:white; width:auto; padding:5px 10px;">מחק</button></td>
-                </tr>`;
-        }
-    }
-
-    async function loadSubmissions() {
-        const res = await fetch(`${BASE_URL}submissions.json`);
-        const data = await res.json();
-        const tbody = document.getElementById('subTable');
-        tbody.innerHTML = "";
-        
-        for(let id in data) {
-            const s = data[id];
-            tbody.innerHTML += `
-                <tr>
-                    <td>${s.student}</td>
-                    <td>${s.questionText ? s.questionText.substring(0,20) : '...'}</td>
-                    <td>${s.userAnswer}</td>
-                    <td class="${s.isCorrect ? 'score-v' : 'score-x'}">${s.isCorrect ? 'נכון' : 'שגוי'}</td>
-                    <td><input type="number" value="${s.score || ''}" onchange="setScore('${id}', this.value)" style="width:50px;"></td>
-                </tr>`;
-        }
-    }
-
-    async function setScore(id, val) {
-        await fetch(`${BASE_URL}submissions/${id}/score.json`, { method: 'PUT', body: JSON.stringify(val) });
-    }
-
-    async function setActive() {
-        const cat = document.getElementById('activeCatSelect').value;
-        await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify({activeCategory: cat}) });
-        alert("הקטגוריה שודרה לחניכים!");
+        try {
+            const res = await fetch(`${BASE_URL}questions.json`);
+            const data = await res.json();
+            const tbody = document.getElementById('qTableBody');
+            tbody.innerHTML = "";
+            if(data) {
+                for(let id in data) {
+                    tbody.innerHTML += `<tr><td>${data[id].text}</td><td>${data[id].answer}</td><td><button onclick="del('questions/${id}')" style="background:red; color:white; width:auto;">מחק</button></td></tr>`;
+                }
+            }
+        } catch(e) { console.error(e); }
     }
 
     async function del(path) {
-        if(confirm('למחוק לצמיתות?')) {
+        if(confirm('למחוק?')) {
             await fetch(`${BASE_URL}${path}.json`, { method: 'DELETE' });
             loadQuestions();
         }
@@ -209,4 +154,3 @@
 </script>
 </body>
 </html>
-
