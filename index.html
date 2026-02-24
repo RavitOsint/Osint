@@ -3,177 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberQuest - Student Mode</title>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
+    <title>CyberQuest - Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* עיצוב כהה ומקצועי - ללא תיבות לבנות */
-        :root { 
-            --bg: #0f172a; 
-            --card: #1e293b; 
-            --accent: #38bdf8; 
-            --error: #ef4444; 
-            --text: #f1f5f9;
-            --input-bg: #334155;
-        }
-        
-        body { 
-            font-family: 'Assistant', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh; 
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --text-color: #f1f5f9;
+            --error-color: #ef4444;
+            --success-color: #10b981;
         }
 
-        .container { width: 90%; max-width: 500px; text-align: center; }
-
-        .card { 
-            background: var(--card); 
-            padding: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.05);
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Assistant', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
-        /* שדות קלט כהים שמשתלבים בעיצוב */
-        input { 
-            width: 100%; 
-            padding: 15px; 
-            margin: 20px 0; 
-            border-radius: 10px; 
-            border: 1px solid #475569; 
-            background: var(--input-bg); 
-            color: white; 
-            font-size: 1.1rem; 
-            outline: none;
+        .container { width: 100%; max-width: 500px; padding: 20px; }
+
+        .terminal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .terminal-header {
+            background: rgba(0,0,0,0.2);
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+
+        .content { padding: 30px; text-align: center; }
+        h2 { font-weight: 700; margin-bottom: 10px; color: var(--accent-color); }
+        p { font-family: 'Fira Code', monospace; font-size: 1.1em; line-height: 1.6; margin-bottom: 20px; }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Fira Code', monospace;
             box-sizing: border-box;
+            transition: 0.3s;
             text-align: center;
+            margin-bottom: 10px;
         }
 
-        input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
 
-        button { 
-            background: var(--accent); 
-            color: var(--bg); 
-            border: none; 
-            padding: 15px 30px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            width: 100%; 
-            font-size: 1.2rem; 
-            transition: 0.3s; 
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
         }
 
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
         button:disabled { background: #475569; cursor: not-allowed; transform: none; }
 
-        .option-btn { 
-            background: var(--input-bg); 
-            color: white; 
-            margin: 10px 0; 
-            text-align: right; 
-            border: 1px solid #475569; 
-            font-size: 1rem;
+        .option-btn {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            text-align: right;
+            padding: 10px 20px;
+            font-family: 'Assistant', sans-serif;
         }
 
-        .timer-msg { 
-            color: var(--error); 
-            font-weight: bold; 
-            margin: 20px 0; 
-            padding: 15px; 
-            background: rgba(239, 68, 68, 0.1); 
-            border-radius: 10px; 
-            border: 1px solid var(--error); 
-        }
-
-        .progress { color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem; }
+        .status-msg { margin-top: 15px; min-height: 24px; font-weight: bold; font-size: 0.9em; }
+        #timer { font-size: 1.5em; color: var(--error-color); margin-top: 10px; font-family: 'Fira Code', monospace; }
+        
         .hidden { display: none !important; }
-
-        h1 { margin-top: 0; color: var(--accent); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="loginScreen" class="card">
-        <h1>CyberQuest</h1>
-        <p>הזן שם כדי להתחיל במשימה</p>
-        <input type="text" id="studentName" placeholder="שם מלא של החניך">
-        <button onclick="startApp()">התחל מבחן</button>
-    </div>
-
-    <div id="waitScreen" class="card hidden">
-        <h2>ממתין לשידור המורה...</h2>
-        <p>המבחן יתחיל ברגע שהמורה תפעיל את הקטגוריה.</p>
-    </div>
-
-    <div id="questionScreen" class="card hidden">
-        <div id="progress" class="progress"></div>
-        <h2 id="questionTitle"></h2>
-        
-        <div id="punishmentArea" class="timer-msg hidden">
-            תשובה שגויה! המתן <span id="seconds">10</span> שניות...
+    <div class="terminal-card">
+        <div class="terminal-header">
+            <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
         </div>
         
-        <div id="ansArea"></div>
-        
-        <div id="openAnsArea" class="hidden">
-            <input type="text" id="openAnswer" placeholder="הקלד כאן את התשובה...">
-            <button id="sendBtn" onclick="submitOpen()">שלח תשובה</button>
-        </div>
-    </div>
+        <div class="content">
+            <div id="loginScreen">
+                <h2>מערכת CyberQuest</h2>
+                <p>הזן שם משתמש לגישה</p>
+                <input type="text" id="studentName" placeholder="שם מלא..." autocomplete="off">
+                <button onclick="startApp()">התחברות</button>
+            </div>
 
-    <div id="finishScreen" class="card hidden">
-        <h1 style="color: var(--success)">המשימה הושלמה! 🏆</h1>
-        <p>כל הכבוד, התשובות שלך נשלחו בהצלחה.</p>
-        <button onclick="location.reload()" style="background: #64748b; margin-top: 20px;">חזרה להתחלה</button>
+            <div id="waitScreen" class="hidden">
+                <h2>ממתין לפקודת שרת...</h2>
+                <p>המבצע יתחיל ברגע שהמורה תאשר.</p>
+            </div>
+
+            <div id="questionScreen" class="hidden">
+                <h2 id="catTitle">טוען...</h2>
+                <p id="qText"></p>
+                
+                <div id="ansArea">
+                    </div>
+
+                <div id="openAnsArea" class="hidden">
+                    <input type="text" id="userAns" placeholder="הקלד תשובה..." autocomplete="off">
+                    <button id="submitBtn" onclick="processAnswer()">שלח פקודה</button>
+                </div>
+
+                <div class="status-msg" id="msg"></div>
+                <div id="timer"></div>
+            </div>
+
+            <div id="finishScreen" class="hidden">
+                <h2 style="color: var(--success-color)">המשימה הושלמה!</h2>
+                <p>הנתונים הועלו לשרת המרכזי.</p>
+                <button onclick="location.reload()" style="background: #475569; color: white;">חזרה למסך הראשי</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/";
-    let studentName = "", currentQuestions = [], currentIndex = 0, gameMode = "quiz", isWaiting = false;
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
+    let studentName = "", questions = [], currentIndex = 0, gameMode = "quiz", isWaiting = false;
 
     async function startApp() {
         studentName = document.getElementById('studentName').value.trim();
-        if (!studentName) return alert("נא להזין שם");
+        if (!studentName) return;
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('waitScreen').classList.remove('hidden');
-        sync(); 
-        setInterval(sync, 4000); // בדיקת עדכוני מורה כל 4 שניות
+        sync(); setInterval(sync, 4000);
     }
 
     async function sync() {
         const res = await fetch(`${BASE_URL}settings.json`);
         const settings = await res.json();
         if (!settings) return;
-
         gameMode = settings.gameMode || "quiz";
-        
-        if (settings.activeCategory && currentQuestions.length === 0) {
+
+        if (settings.activeCategory && questions.length === 0) {
             const qRes = await fetch(`${BASE_URL}questions.json`);
-            const allQs = await qRes.json();
-            currentQuestions = Object.values(allQs || {}).filter(q => q.category === settings.activeCategory);
-            if(currentQuestions.length > 0) showQuestion();
+            const all = await qRes.json();
+            questions = Object.values(all || {}).filter(q => q.category === settings.activeCategory);
+            if (questions.length > 0) {
+                document.getElementById('catTitle').innerText = settings.activeCategory;
+                showQuestion();
+            }
         }
     }
 
     function showQuestion() {
-        if (currentIndex >= currentQuestions.length) {
+        if (currentIndex >= questions.length) {
             document.getElementById('questionScreen').classList.add('hidden');
             document.getElementById('finishScreen').classList.remove('hidden');
             return;
         }
-
         document.getElementById('waitScreen').classList.add('hidden');
         document.getElementById('questionScreen').classList.remove('hidden');
         
-        const q = currentQuestions[currentIndex];
-        document.getElementById('progress').innerText = `שאלה ${currentIndex + 1} מתוך ${currentQuestions.length}`;
-        document.getElementById('questionTitle').innerText = q.text;
+        const q = questions[currentIndex];
+        document.getElementById('qText').innerText = q.text;
+        document.getElementById('msg').innerText = `משימה ${currentIndex + 1} מתוך ${questions.length}`;
         
         const ansArea = document.getElementById('ansArea');
         const openArea = document.getElementById('openAnsArea');
@@ -185,71 +199,67 @@
                 const btn = document.createElement('button');
                 btn.className = "option-btn";
                 btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt);
+                btn.onclick = () => processAnswer(opt);
                 ansArea.appendChild(btn);
             });
         } else {
             openArea.classList.remove('hidden');
-            document.getElementById('openAnswer').value = "";
+            document.getElementById('userAns').value = "";
         }
     }
 
-    async function checkAnswer(userAns) {
+    async function processAnswer(providedAns) {
         if (isWaiting) return;
-        const q = currentQuestions[currentIndex];
-        const isCorrect = (q.answer && userAns.trim().toLowerCase() === q.answer.trim().toLowerCase());
+        const q = questions[currentIndex];
+        const userVal = providedAns || document.getElementById('userAns').value.trim();
+        if (!userVal) return;
 
-        // לוגיקת הפרדה:
+        const isCorrect = (q.answer && userVal.toLowerCase() === q.answer.toLowerCase());
+
         if (gameMode === 'escape') {
-            // בחדר בריחה: אם יש תשובה מוגדרת והמשתמש טעה -> ענישה
             if (q.answer && !isCorrect) {
-                startPunishment();
-                return;
+                penalty();
+                return; // בחדר בריחה לא עוברים שאלה אם טועים ב-Flag
             }
         }
-        
-        // אם הגענו לכאן: או שזה בוחן רגיל (עוברים תמיד) או שזה חדר בריחה והתשובה נכונה
-        await saveSubmission(q, userAns, isCorrect);
+
+        // בבוחן - שומר ועובר תמיד. בחדר בריחה - שומר ועובר כי הגענו לכאן רק אם צדק.
+        await save(q, userVal, isCorrect);
         currentIndex++;
         showQuestion();
     }
 
-    function submitOpen() {
-        const val = document.getElementById('openAnswer').value.trim();
-        if (!val) return;
-        checkAnswer(val);
-    }
-
-    function startPunishment() {
+    function penalty() {
         isWaiting = true;
-        const area = document.getElementById('punishmentArea');
-        const secSpan = document.getElementById('seconds');
-        const sendBtn = document.getElementById('sendBtn');
-        
-        area.classList.remove('hidden');
-        if(sendBtn) sendBtn.disabled = true;
-        
         let timeLeft = 10;
-        secSpan.innerText = timeLeft;
+        const btn = document.getElementById('submitBtn');
+        const input = document.getElementById('userAns');
+        const msg = document.getElementById('msg');
+        
+        if(btn) btn.disabled = true;
+        if(input) input.disabled = true;
+        msg.style.color = "var(--error-color)";
+        msg.innerText = "גישה נדחתה! נועל מערכת...";
         
         const interval = setInterval(() => {
+            document.getElementById('timer').innerText = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
             timeLeft--;
-            secSpan.innerText = timeLeft;
-            if (timeLeft <= 0) {
+            if (timeLeft < 0) {
                 clearInterval(interval);
-                area.classList.add('hidden');
-                if(sendBtn) sendBtn.disabled = false;
+                document.getElementById('timer').innerText = "";
+                if(btn) btn.disabled = false;
+                if(input) input.disabled = false;
+                msg.innerText = "";
                 isWaiting = false;
             }
         }, 1000);
     }
 
-    async function saveSubmission(q, ans, isCorrect) {
+    async function save(q, ans, isCorrect) {
         const data = {
             student: studentName,
             questionText: q.text,
             userAnswer: ans,
-            hasFlag: !!q.answer,
             isCorrect: q.answer ? isCorrect : null,
             timestamp: new Date().toISOString()
         };
