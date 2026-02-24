@@ -3,54 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberQuest - חניך</title>
+    <title>CyberQuest - Student Mode</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --error: #ef4444; --success: #22c55e; }
-        body { font-family: 'Assistant', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        body { font-family: 'Assistant', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .container { width: 90%; max-width: 500px; text-align: center; }
         .card { background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
-        input, select { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; font-family: inherit; }
-        button { background: var(--accent); color: var(--bg); border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1rem; }
-        .timer { color: var(--error); font-weight: bold; font-size: 1.2rem; margin: 10px 0; }
-        .hidden { display: none; }
-        .option-btn { background: #334155; color: white; margin: 5px 0; text-align: right; border: 1px solid #475569; }
-        .option-btn:hover { background: #475569; }
-        .progress { font-size: 0.9rem; color: #94a3b8; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; font-family: inherit; font-size: 1rem; }
+        button { background: var(--accent); color: var(--bg); border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1rem; transition: 0.3s; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        .timer-msg { color: var(--error); font-weight: bold; font-size: 1.2rem; margin: 10px 0; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--error); }
+        .hidden { display: none !important; }
+        .option-btn { background: #334155; color: white; margin: 8px 0; text-align: right; border: 1px solid #475569; }
+        .progress { font-size: 0.9rem; color: #94a3b8; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="loginScreen" class="card">
-        <h1>התחברות למבחן</h1>
-        <input type="text" id="studentName" placeholder="הכנס שם מלא">
-        <button onclick="startApp()">כניסה</button>
+        <h1>הזנת פרטים</h1>
+        <input type="text" id="studentName" placeholder="שם מלא">
+        <button onclick="startApp()">התחל מבחן</button>
     </div>
 
     <div id="waitScreen" class="card hidden">
-        <h2 id="waitMsg">ממתין לתחילת המבחן...</h2>
-        <div class="loader"></div>
+        <h2>ממתין לשידור קטגוריה מהמורה...</h2>
+        <p>ברגע שהמורה תפעיל קטגוריה, המבחן יתחיל אוטומטית.</p>
     </div>
 
     <div id="questionScreen" class="card hidden">
         <div id="progress" class="progress"></div>
         <h2 id="questionTitle"></h2>
-        <div id="punishmentArea" class="timer hidden">תשובה שגויה! המתן <span id="seconds">10</span> שניות...</div>
         
-        <div id="ansArea">
-            </div>
+        <div id="punishmentArea" class="timer-msg hidden">
+            תשובה שגויה! נסה שוב בעוד <span id="seconds">10</span> שניות...
+        </div>
+        
+        <div id="ansArea"></div>
         
         <div id="openAnsArea" class="hidden">
-            <input type="text" id="openAnswer" placeholder="הקלד תשובה...">
-            <button onclick="submitOpen()">שלח תשובה</button>
+            <input type="text" id="openAnswer" placeholder="הקלד תשובה כאן...">
+            <button id="sendBtn" onclick="submitOpen()">שלח תשובה</button>
         </div>
     </div>
 
     <div id="finishScreen" class="card hidden">
-        <h1>כל הכבוד! 🏆</h1>
-        <p>סיימת את המבחן בהצלחה.</p>
-        <p>התשובות שלך הועברו לבדיקה.</p>
+        <h1>המבחן הסתיים! 🏆</h1>
+        <p>התשובות שלך נשמרו במערכת.</p>
     </div>
 </div>
 
@@ -59,7 +60,7 @@
     let studentName = "";
     let currentQuestions = [];
     let currentIndex = 0;
-    let gameMode = "quiz"; // escape or quiz
+    let gameMode = "quiz"; 
     let isWaiting = false;
 
     async function startApp() {
@@ -67,23 +68,30 @@
         if (!studentName) return alert("נא להזין שם");
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('waitScreen').classList.remove('hidden');
-        checkActiveSession();
-        setInterval(checkActiveSession, 5000);
+        
+        // טעינת הגדרות ובדיקה ראשונית
+        await syncSettings();
+        // בדיקה כל 5 שניות אם המורה שינתה משהו
+        setInterval(syncSettings, 5000);
     }
 
-    async function checkActiveSession() {
+    async function syncSettings() {
         const res = await fetch(`${BASE_URL}settings.json`);
         const settings = await res.json();
+        if (!settings) return;
+
         gameMode = settings.gameMode || "quiz";
         
-        const qRes = await fetch(`${BASE_URL}questions.json`);
-        const allQs = await qRes.json();
-        
-        const filtered = Object.values(allQs || {}).filter(q => q.category === settings.activeCategory);
-        
-        if (filtered.length > 0 && currentQuestions.length === 0) {
-            currentQuestions = filtered;
-            showQuestion();
+        if (settings.activeCategory) {
+            const qRes = await fetch(`${BASE_URL}questions.json`);
+            const allQs = await qRes.json();
+            const filtered = Object.values(allQs || {}).filter(q => q.category === settings.activeCategory);
+            
+            // התחלת מבחן רק אם לא התחלנו כבר
+            if (filtered.length > 0 && currentQuestions.length === 0) {
+                currentQuestions = filtered;
+                showQuestion();
+            }
         }
     }
 
@@ -94,13 +102,11 @@
             return;
         }
 
-        isWaiting = false;
         document.getElementById('waitScreen').classList.add('hidden');
         document.getElementById('questionScreen').classList.remove('hidden');
-        document.getElementById('punishmentArea').classList.add('hidden');
         
         const q = currentQuestions[currentIndex];
-        document.getElementById('progress').innerText = `שאלה ${currentIndex + 1} מתוך ${currentQuestions.length}`;
+        document.getElementById('progress').innerText = `שאלה ${currentIndex + 1} מתוך ${currentQuestions.length} (${gameMode === 'escape' ? 'חדר בריחה' : 'בוחן'})`;
         document.getElementById('questionTitle').innerText = q.text;
         
         const ansArea = document.getElementById('ansArea');
@@ -127,19 +133,22 @@
         const q = currentQuestions[currentIndex];
         let isCorrect = false;
 
-        // בדיקה אוטומטית אם יש FLAG או שזה אמריקאי
+        // בדיקה אוטומטית אם קיים Flag
         if (q.answer) {
             isCorrect = (userAns.trim().toLowerCase() === q.answer.trim().toLowerCase());
         }
 
-        if (gameMode === 'escape' && q.answer && !isCorrect) {
-            startPunishment();
-            return;
+        // לוגיקת הפרדה:
+        if (gameMode === 'escape') {
+            // בחדר בריחה: אם יש תשובה נכונה והמשתמש טעה -> ענישה ועצור
+            if (q.answer && !isCorrect) {
+                startPunishment();
+                return; 
+            }
         }
-
-        // שמירה ל-Firebase
+        
+        // אם הגענו לכאן: או שזה בוחן רגיל (עוברים תמיד) או שזה חדר בריחה והתשובה נכונה
         await saveSubmission(q, userAns, isCorrect);
-
         currentIndex++;
         showQuestion();
     }
@@ -154,7 +163,11 @@
         isWaiting = true;
         const area = document.getElementById('punishmentArea');
         const secSpan = document.getElementById('seconds');
+        const btn = document.getElementById('sendBtn');
+        
         area.classList.remove('hidden');
+        if(btn) btn.disabled = true;
+        
         let timeLeft = 10;
         secSpan.innerText = timeLeft;
         
@@ -164,6 +177,7 @@
             if (timeLeft <= 0) {
                 clearInterval(interval);
                 area.classList.add('hidden');
+                if(btn) btn.disabled = false;
                 isWaiting = false;
             }
         }, 1000);
@@ -176,7 +190,7 @@
             userAnswer: ans,
             correctAnswer: q.answer || "",
             hasFlag: !!q.answer,
-            isCorrect: q.answer ? isCorrect : null, // null אומר שממתין לבדיקה ידנית
+            isCorrect: q.answer ? isCorrect : null, // null = ממתין לבדיקה ידנית
             timestamp: new Date().toISOString()
         };
         await fetch(`${BASE_URL}submissions.json`, { method: 'POST', body: JSON.stringify(data) });
