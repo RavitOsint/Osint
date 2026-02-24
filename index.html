@@ -3,113 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberQuest - OSINT Mission</title>
+    <title>CyberQuest - חניך</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f1f5f9; --success: #10b981; --error: #ef4444; }
-        body { background: var(--bg); color: var(--text); font-family: 'Assistant', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 500px; padding: 20px; }
-        .card { background: var(--card); border-radius: 16px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: var(--accent); margin-top: 0; }
-        p { font-size: 1.2rem; line-height: 1.6; white-space: pre-wrap; text-align: right; }
-        input { width: 100%; padding: 14px; background: rgba(0,0,0,0.2); border: 2px solid #334155; border-radius: 8px; color: white; margin-bottom: 15px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 14px; background: var(--accent); color: var(--bg); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1.1rem; }
-        .option-btn { background: rgba(255,255,255,0.05); color: var(--accent); border: 1px solid var(--accent); margin-bottom: 10px; }
-        #gameArea, #finishArea { display: none; }
-        #timer { font-size: 2rem; color: var(--error); margin-top: 10px; font-weight: bold; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --error: #ef4444; --success: #22c55e; }
+        body { font-family: 'Assistant', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .container { width: 90%; max-width: 500px; text-align: center; }
+        .card { background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        input, select { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; font-family: inherit; }
+        button { background: var(--accent); color: var(--bg); border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1rem; }
+        .timer { color: var(--error); font-weight: bold; font-size: 1.2rem; margin: 10px 0; }
+        .hidden { display: none; }
+        .option-btn { background: #334155; color: white; margin: 5px 0; text-align: right; border: 1px solid #475569; }
+        .option-btn:hover { background: #475569; }
+        .progress { font-size: 0.9rem; color: #94a3b8; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card" id="welcomeArea">
-        <h2>משימת OSINT</h2>
-        <p style="text-align: center;">ברוכים הבאים לתרגול! לפניכם מספר אתגרים שיבחנו את יכולות החקירה שלכם.</p>
-        <input type="text" id="studentName" placeholder="הזינו שם מלא...">
-        <button onclick="startMission()">התחל משימה</button>
+    <div id="loginScreen" class="card">
+        <h1>התחברות למבחן</h1>
+        <input type="text" id="studentName" placeholder="הכנס שם מלא">
+        <button onclick="startApp()">כניסה</button>
     </div>
 
-    <div class="card" id="gameArea">
-        <h2 id="catTitle">טוען...</h2>
-        <p id="qText"></p>
-        <div id="inputArea"></div>
-        <div id="msg" style="margin-top:15px;"></div>
-        <div id="timer"></div>
+    <div id="waitScreen" class="card hidden">
+        <h2 id="waitMsg">ממתין לתחילת המבחן...</h2>
+        <div class="loader"></div>
     </div>
 
-    <div class="card" id="finishArea">
-        <div style="font-size: 4rem;">🏆</div>
-        <h2>סיימתן בהצלחה!</h2>
-        <p style="text-align: center;">כל התשובות הועברו למדריכה לבדיקה.</p>
+    <div id="questionScreen" class="card hidden">
+        <div id="progress" class="progress"></div>
+        <h2 id="questionTitle"></h2>
+        <div id="punishmentArea" class="timer hidden">תשובה שגויה! המתן <span id="seconds">10</span> שניות...</div>
+        
+        <div id="ansArea">
+            </div>
+        
+        <div id="openAnsArea" class="hidden">
+            <input type="text" id="openAnswer" placeholder="הקלד תשובה...">
+            <button onclick="submitOpen()">שלח תשובה</button>
+        </div>
+    </div>
+
+    <div id="finishScreen" class="card hidden">
+        <h1>כל הכבוד! 🏆</h1>
+        <p>סיימת את המבחן בהצלחה.</p>
+        <p>התשובות שלך הועברו לבדיקה.</p>
     </div>
 </div>
 
 <script>
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; // <--- להחליף בכתובת שלך!
-    let questions = [], currentIndex = 0, currentCat = "", userName = "";
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/";
+    let studentName = "";
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let gameMode = "quiz"; // escape or quiz
+    let isWaiting = false;
 
-    function startMission() {
-        userName = document.getElementById('studentName').value.trim();
-        if(!userName) return alert("נא להזין שם");
-        document.getElementById('welcomeArea').style.display = 'none';
-        document.getElementById('gameArea').style.display = 'block';
-        sync();
+    async function startApp() {
+        studentName = document.getElementById('studentName').value.trim();
+        if (!studentName) return alert("נא להזין שם");
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('waitScreen').classList.remove('hidden');
+        checkActiveSession();
+        setInterval(checkActiveSession, 5000);
     }
 
-    async function sync() {
-        setInterval(async () => {
-            const res = await fetch(`${BASE_URL}settings.json`);
-            const settings = await res.json();
-            if(settings && settings.activeCategory !== currentCat) {
-                currentCat = settings.activeCategory;
-                currentIndex = 0;
-                const qRes = await fetch(`${BASE_URL}questions.json`);
-                const all = await qRes.json();
-                questions = Object.values(all).filter(q => q.category === currentCat);
-                showQ();
-            }
-        }, 3000);
-    }
-
-    function showQ() {
-        const area = document.getElementById('inputArea');
-        document.getElementById('catTitle').innerText = currentCat;
-        if(currentIndex < questions.length) {
-            const q = questions[currentIndex];
-            document.getElementById('qText').innerText = q.text;
-            area.innerHTML = "";
-            if(q.type === 'multiple') {
-                q.options.forEach(opt => {
-                    const b = document.createElement('button');
-                    b.innerText = opt; b.className = "option-btn";
-                    b.onclick = () => check(opt); area.appendChild(b);
-                });
-            } else {
-                const i = document.createElement('input'); i.id = "ansIn"; i.placeholder = "תשובה...";
-                const b = document.createElement('button'); b.innerText = "שלח פתרון";
-                b.onclick = () => check(i.value); area.appendChild(i); area.appendChild(b);
-            }
-        } else {
-            document.getElementById('qText').innerText = "סיימתן את האתגר!";
-            area.innerHTML = `<button onclick="document.getElementById('gameArea').style.display='none';document.getElementById('finishArea').style.display='block'">🚩 סיים אתגר סופית</button>`;
+    async function checkActiveSession() {
+        const res = await fetch(`${BASE_URL}settings.json`);
+        const settings = await res.json();
+        gameMode = settings.gameMode || "quiz";
+        
+        const qRes = await fetch(`${BASE_URL}questions.json`);
+        const allQs = await qRes.json();
+        
+        const filtered = Object.values(allQs || {}).filter(q => q.category === settings.activeCategory);
+        
+        if (filtered.length > 0 && currentQuestions.length === 0) {
+            currentQuestions = filtered;
+            showQuestion();
         }
     }
 
-    async function check(val) {
-        const q = questions[currentIndex];
-        const isCorrect = val.trim().toLowerCase() === q.answer.toLowerCase();
-        await fetch(`${BASE_URL}submissions.json`, { method: 'POST', body: JSON.stringify({
-            student: userName, questionText: q.text, userAnswer: val, isCorrect, timestamp: new Date().toISOString()
-        })});
-        if(isCorrect) { currentIndex++; showQ(); } else { penalty(); }
+    function showQuestion() {
+        if (currentIndex >= currentQuestions.length) {
+            document.getElementById('questionScreen').classList.add('hidden');
+            document.getElementById('finishScreen').classList.remove('hidden');
+            return;
+        }
+
+        isWaiting = false;
+        document.getElementById('waitScreen').classList.add('hidden');
+        document.getElementById('questionScreen').classList.remove('hidden');
+        document.getElementById('punishmentArea').classList.add('hidden');
+        
+        const q = currentQuestions[currentIndex];
+        document.getElementById('progress').innerText = `שאלה ${currentIndex + 1} מתוך ${currentQuestions.length}`;
+        document.getElementById('questionTitle').innerText = q.text;
+        
+        const ansArea = document.getElementById('ansArea');
+        const openArea = document.getElementById('openAnsArea');
+        ansArea.innerHTML = "";
+        
+        if (q.type === 'multiple') {
+            openArea.classList.add('hidden');
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                ansArea.appendChild(btn);
+            });
+        } else {
+            openArea.classList.remove('hidden');
+            document.getElementById('openAnswer').value = "";
+        }
     }
 
-    function penalty() {
-        let t = 10; document.getElementById('inputArea').style.pointerEvents = "none";
-        const itv = setInterval(() => {
-            document.getElementById('timer').innerText = t; t--;
-            if(t < 0) { clearInterval(itv); document.getElementById('timer').innerText = ""; document.getElementById('inputArea').style.pointerEvents = "all"; }
+    async function checkAnswer(userAns) {
+        if (isWaiting) return;
+        const q = currentQuestions[currentIndex];
+        let isCorrect = false;
+
+        // בדיקה אוטומטית אם יש FLAG או שזה אמריקאי
+        if (q.answer) {
+            isCorrect = (userAns.trim().toLowerCase() === q.answer.trim().toLowerCase());
+        }
+
+        if (gameMode === 'escape' && q.answer && !isCorrect) {
+            startPunishment();
+            return;
+        }
+
+        // שמירה ל-Firebase
+        await saveSubmission(q, userAns, isCorrect);
+
+        currentIndex++;
+        showQuestion();
+    }
+
+    async function submitOpen() {
+        const val = document.getElementById('openAnswer').value.trim();
+        if (!val) return;
+        checkAnswer(val);
+    }
+
+    function startPunishment() {
+        isWaiting = true;
+        const area = document.getElementById('punishmentArea');
+        const secSpan = document.getElementById('seconds');
+        area.classList.remove('hidden');
+        let timeLeft = 10;
+        secSpan.innerText = timeLeft;
+        
+        const interval = setInterval(() => {
+            timeLeft--;
+            secSpan.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                area.classList.add('hidden');
+                isWaiting = false;
+            }
         }, 1000);
+    }
+
+    async function saveSubmission(q, ans, isCorrect) {
+        const data = {
+            student: studentName,
+            questionText: q.text,
+            userAnswer: ans,
+            correctAnswer: q.answer || "",
+            hasFlag: !!q.answer,
+            isCorrect: q.answer ? isCorrect : null, // null אומר שממתין לבדיקה ידנית
+            timestamp: new Date().toISOString()
+        };
+        await fetch(`${BASE_URL}submissions.json`, { method: 'POST', body: JSON.stringify(data) });
     }
 </script>
 </body>
