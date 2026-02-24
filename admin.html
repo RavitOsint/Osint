@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
-    <title>CyberQuest Admin - ניהול ובדיקה מתקדמת</title>
+    <title>CyberQuest Admin - ניהול ובדיקה</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --sidebar-bg: #1e293b; --main-bg: #f8fafc; --accent: #38bdf8; --error: #ef4444; --success: #10b981; --warning: #f59e0b; }
         body { font-family: 'Assistant', sans-serif; margin: 0; display: flex; background: var(--main-bg); min-height: 100vh; }
         
-        /* מסך לוגין */
+        /* לוגין */
         #loginArea { position: fixed; inset: 0; background: #1e293b; display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-card { background: white; padding: 40px; border-radius: 15px; text-align: center; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* מבנה כללי */
+        /* פאנל ניהול */
         #adminContent { display: none; width: 100%; }
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100vh; }
         .main-panel { margin-right: 260px; flex: 1; padding: 40px; }
@@ -22,19 +22,24 @@
         .tab-btn { display: block; width: 100%; padding: 15px; margin-bottom: 8px; border: none; background: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 8px; font-size: 1rem; }
         .tab-btn.active { background: var(--accent); color: var(--sidebar-bg); font-weight: bold; }
         
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
         button { background: var(--accent); color: var(--sidebar-bg); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
         
         .hidden { display: none !important; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
         th, td { text-align: right; padding: 12px; border-bottom: 1px solid #f1f5f9; }
         
         /* עיצוב בדיקת מבחנים */
-        .student-card { background: white; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; text-align: center; }
-        .student-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .exam-row { border-bottom: 2px solid #f1f5f9; padding: 15px 0; }
-        .manual-check { background: #fffbeb; border: 1px solid #fef3c7; padding: 10px; border-radius: 8px; margin-top: 10px; }
-        .btn-check { width: auto; padding: 6px 15px; font-size: 0.9rem; }
+        .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .student-card { background: white; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.2s; }
+        .student-card:hover { border-color: var(--accent); background: #f0f9ff; }
+        
+        .exam-item { border-bottom: 2px solid #f1f5f9; padding: 20px 0; }
+        .check-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-check { width: auto; padding: 8px 20px; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-auto { background: #e0f2fe; color: #0369a1; }
+        .badge-manual { background: #fef3c7; color: #92400e; }
     </style>
 </head>
 <body>
@@ -62,33 +67,36 @@
             <div class="card">
                 <h2>➕ הוספת שאלה חדשה</h2>
                 <select id="qCatSelect"></select>
-                <select id="qType" onchange="updateQuestionUI()">
+                
+                <select id="qType" onchange="toggleFormFields()">
                     <option value="open">שאלה פתוחה</option>
                     <option value="multiple">שאלה אמריקאית</option>
                 </select>
 
-                <div id="flagOptionArea">
-                    <label><input type="checkbox" id="hasFlag" onchange="updateQuestionUI()"> יש Flag לבדיקה אוטומטית?</label>
+                <div id="flagToggleArea" style="margin: 10px 0;">
+                    <label style="cursor: pointer;">
+                        <input type="checkbox" id="hasFlag" onchange="toggleFormFields()"> יש Flag לבדיקה אוטומטית?
+                    </label>
                 </div>
 
                 <textarea id="qText" placeholder="תוכן השאלה..."></textarea>
                 
+                <div id="answerInputArea" class="hidden">
+                    <input id="qAns" placeholder="הזיני את התשובה הנכונה (ה-Flag)">
+                </div>
+
                 <div id="optArea" class="hidden">
-                    <p>אופציות לתשובה:</p>
+                    <p>אופציות לבחירה:</p>
                     <div id="ansList"></div>
                     <button onclick="addOptionField()" style="background:#e2e8f0; color:#475569; width:auto;">+ הוסף אופציה</button>
                 </div>
 
-                <div id="answerInputArea">
-                    <input id="qAns" placeholder="התשובה הנכונה (ה-Flag)">
-                </div>
-
-                <button onclick="saveQuestion()">שמור שאלה</button>
+                <button onclick="saveQuestion()">שמור שאלה במאגר</button>
             </div>
             
             <div class="card">
-                <h2>🔍 מאגר שאלות</h2>
-                <table id="qTable">
+                <h2>🔍 מאגר שאלות קיים</h2>
+                <table>
                     <thead><tr><th>קטגוריה</th><th>סוג</th><th>שאלה</th><th>פעולות</th></tr></thead>
                     <tbody id="qTableBody"></tbody>
                 </table>
@@ -97,13 +105,13 @@
 
         <div id="gradingTab" class="tab-content hidden">
             <div id="studentListArea" class="card">
-                <h2>👥 רשימת חניכים שהגישו</h2>
-                <div id="studentsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;"></div>
+                <h2>👥 רשימת הגשות</h2>
+                <div id="studentsGrid" class="student-grid"></div>
             </div>
 
-            <div id="examDetailArea" class="card hidden">
-                <button onclick="backToStudents()" style="width:auto; background:#64748b; color:white;">⬅️ חזרה לרשימה</button>
-                <h2 id="currentStudentTitle">מבחן של: </h2>
+            <div id="examViewArea" class="card hidden">
+                <button onclick="backToList()" style="width:auto; background:#64748b; color:white;">⬅️ חזרה לרשימה</button>
+                <h2 id="viewingStudentName">בדיקת מבחן</h2>
                 <div id="examContent"></div>
             </div>
         </div>
@@ -128,98 +136,104 @@
     const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
     const PASS = "zigi2026";
 
-    // --- לוגיקה של הוספת שאלה ---
-    function updateQuestionUI() {
+    // --- לוגיקה של הטופס ---
+    function toggleFormFields() {
         const type = document.getElementById('qType').value;
         const hasFlag = document.getElementById('hasFlag').checked;
-        const isMultiple = type === 'multiple';
-
-        document.getElementById('optArea').classList.toggle('hidden', !isMultiple);
-        document.getElementById('flagOptionArea').classList.toggle('hidden', isMultiple);
         
-        // הצגת שדה התשובה רק אם זה אמריקאי או פתוחה עם Flag
-        const showAnsInput = isMultiple || (type === 'open' && hasFlag);
-        document.getElementById('answerInputArea').classList.toggle('hidden', !showAnsInput);
+        // הצגת Checkbox רק בשאלה פתוחה
+        document.getElementById('flagToggleArea').classList.toggle('hidden', type === 'multiple');
         
-        if (isMultiple && document.getElementById('ansList').children.length === 0) {
-            addOptionField(); addOptionField();
-        }
+        // הצגת שדה התשובה אם זה אמריקאי או אם סימנו שיש Flag
+        const showAns = (type === 'multiple') || (type === 'open' && hasFlag);
+        document.getElementById('answerInputArea').classList.toggle('hidden', !showAns);
+        
+        // הצגת אופציות רק באמריקאי
+        document.getElementById('optArea').classList.toggle('hidden', type !== 'multiple');
     }
 
     function addOptionField() {
         const i = document.createElement('input');
-        i.className = "opt-input"; i.placeholder = "אופציה...";
+        i.className = "opt-input"; i.style.marginBottom = "5px"; i.placeholder = "אופציה...";
         document.getElementById('ansList').appendChild(i);
     }
 
     async function saveQuestion() {
         const type = document.getElementById('qType').value;
-        const hasFlag = document.getElementById('hasFlag').checked;
+        const flagChecked = document.getElementById('hasFlag').checked;
         const opts = Array.from(document.querySelectorAll('.opt-input')).map(i => i.value).filter(v => v);
-        
+
         const data = {
             category: document.getElementById('qCatSelect').value,
             type: type,
             text: document.getElementById('qText').value,
-            answer: (type === 'multiple' || hasFlag) ? document.getElementById('qAns').value.trim() : null,
-            hasFlag: type === 'open' ? hasFlag : true,
+            hasFlag: type === 'multiple' ? true : flagChecked,
+            answer: (type === 'multiple' || flagChecked) ? document.getElementById('qAns').value.trim() : "",
             options: type === 'multiple' ? opts : null
         };
 
+        if(!data.category || !data.text) return alert("מלאי שדות חובה");
+
         await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
-        alert("שאלה נשמרה!");
-        location.reload(); 
+        alert("נשמר!");
+        location.reload();
     }
 
     // --- לוגיקה של בדיקת מבחנים ---
     async function loadSubmissions() {
-        const [subRes, qRes] = await Promise.all([
-            fetch(`${BASE_URL}submissions.json`),
-            fetch(`${BASE_URL}questions.json`)
-        ]);
-        const subs = await subRes.json();
-        const questions = await qRes.json();
-        
+        const res = await fetch(`${BASE_URL}submissions.json`);
+        const data = await res.json();
         const grid = document.getElementById('studentsGrid');
         grid.innerHTML = "";
-        if(!subs) return grid.innerHTML = "אין הגשות.";
+        
+        if(!data) return grid.innerHTML = "אין הגשות עדיין.";
 
-        const students = [...new Set(Object.values(subs).map(s => s.student))];
+        const students = [...new Set(Object.values(data).map(s => s.student))];
         students.forEach(name => {
             const div = document.createElement('div');
             div.className = "student-card";
-            div.innerHTML = `<h3>👤 ${name}</h3><p>לחצי לבדיקה</p>`;
-            div.onclick = () => showStudentExam(name, subs, questions);
+            div.innerHTML = `<h3>👤 ${name}</h3><p>לחצי לבדיקת מבחן</p>`;
+            div.onclick = () => openExam(name, data);
             grid.appendChild(div);
         });
     }
 
-    function showStudentExam(name, allSubs, allQs) {
+    function openExam(studentName, allSubs) {
         document.getElementById('studentListArea').classList.add('hidden');
-        document.getElementById('examDetailArea').classList.remove('hidden');
-        document.getElementById('currentStudentTitle').innerText = "מבחן של: " + name;
+        document.getElementById('examViewArea').classList.remove('hidden');
+        document.getElementById('viewingStudentName').innerText = "מבחן של: " + studentName;
         
         const content = document.getElementById('examContent');
         content.innerHTML = "";
 
-        const studentData = Object.keys(allSubs)
-            .filter(id => allSubs[id].student === name)
+        const mySubs = Object.keys(allSubs)
+            .filter(id => allSubs[id].student === studentName)
             .map(id => ({dbId: id, ...allSubs[id]}));
 
-        studentData.forEach((sub, idx) => {
+        mySubs.forEach((sub, idx) => {
             const div = document.createElement('div');
-            div.className = "exam-row";
-            const statusColor = sub.isCorrect ? 'var(--success)' : (sub.isCorrect === false ? 'var(--error)' : 'var(--warning)');
-            const statusText = sub.isCorrect ? '✅ נכון' : (sub.isCorrect === false ? '❌ שגוי' : '⏳ ממתין לבדיקה');
+            div.className = "exam-item";
+            
+            // זיהוי אם הבדיקה היא אוטומטית או ידנית
+            const isManual = (sub.correctAnswer === "" || sub.correctAnswer === undefined);
+            const badge = isManual ? '<span class="badge badge-manual">בדיקה ידנית</span>' : '<span class="badge badge-auto">בדיקה אוטומטית</span>';
+            
+            let statusHtml = "";
+            if (!isManual) {
+                const color = sub.isCorrect ? 'var(--success)' : 'var(--error)';
+                statusHtml = `<p>תוצאת מערכת: <strong style="color:${color}">${sub.isCorrect ? 'נכון' : 'שגוי'}</strong></p>`;
+            }
 
             div.innerHTML = `
-                <p><strong>שאלה ${idx+1}:</strong> ${sub.questionText}</p>
-                <p><strong>תשובת החניך:</strong> <span style="color:blue">${sub.userAnswer}</span></p>
-                <p>סטטוס: <strong style="color:${statusColor}">${statusText}</strong></p>
-                <div class="manual-check">
-                    <span>סמני ידנית:</span>
-                    <button class="btn-check" onclick="updateStatus('${sub.dbId}', true)" style="background:var(--success); color:white">נכון</button>
-                    <button class="btn-check" onclick="updateStatus('${sub.dbId}', false)" style="background:var(--error); color:white">שגוי</button>
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>שאלה ${idx+1}</strong> ${badge}
+                </div>
+                <p>${sub.questionText}</p>
+                <p>תשובת החניך: <span style="color:blue; font-weight:bold;">${sub.userAnswer}</span></p>
+                ${statusHtml}
+                <div class="check-buttons">
+                    <button class="btn-check" onclick="updateStatus('${sub.dbId}', true)" style="background:var(--success); color:white">סמן כנכון ✅</button>
+                    <button class="btn-check" onclick="updateStatus('${sub.dbId}', false)" style="background:var(--error); color:white">סמן כשגוי ❌</button>
                 </div>
             `;
             content.appendChild(div);
@@ -228,20 +242,20 @@
 
     async function updateStatus(id, status) {
         await fetch(`${BASE_URL}submissions/${id}/isCorrect.json`, { method: 'PUT', body: JSON.stringify(status) });
-        loadSubmissions(); // רענון
         alert("עודכן!");
+        loadSubmissions(); 
     }
 
-    function backToStudents() {
-        document.getElementById('examDetailArea').classList.add('hidden');
+    function backToList() {
+        document.getElementById('examViewArea').classList.add('hidden');
         document.getElementById('studentListArea').classList.remove('hidden');
     }
 
-    // --- פונקציות תשתית (לוגין, טאבים, טעינה) ---
+    // --- תשתיות ---
     function login() {
         if(document.getElementById('adminPass').value === PASS) {
             document.getElementById('loginArea').classList.add('hidden');
-            document.getElementById('adminContent').classList.add('flex');
+            document.getElementById('adminContent').style.display = 'flex';
             loadAll();
         } else { document.getElementById('errorMsg').style.display='block'; }
     }
@@ -262,16 +276,16 @@
             s.innerHTML = '<option value="">בחרי קטגוריה...</option>';
             for(let id in data) s.innerHTML += `<option value="${data[id].name}">${data[id].name}</option>`;
         });
-        loadQuestionsList();
+        loadQuestions();
     }
 
-    async function loadQuestionsList() {
+    async function loadQuestions() {
         const res = await fetch(`${BASE_URL}questions.json`);
         const data = await res.json();
-        const body = document.getElementById('qTableBody');
-        body.innerHTML = "";
+        const tbody = document.getElementById('qTableBody');
+        tbody.innerHTML = "";
         for(let id in data) {
-            body.innerHTML += `<tr><td>${data[id].category}</td><td>${data[id].type}</td><td>${data[id].text}</td><td><button onclick="del('questions/${id}')" style="background:red; color:white; width:auto;">מחק</button></td></tr>`;
+            tbody.innerHTML += `<tr><td>${data[id].category}</td><td>${data[id].type}</td><td>${data[id].text}</td><td><button onclick="del('questions/${id}')" style="background:red; color:white; width:auto;">מחק</button></td></tr>`;
         }
     }
 
