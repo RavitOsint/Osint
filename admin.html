@@ -113,7 +113,7 @@
 </div>
 
 <script>
-    console.log("System initialization..."); // זה חייב להופיע ב-Console ברגע שהדף נטען
+    // console.log("System initialization..."); // זה חייב להופיע ב-Console ברגע שהדף נטען
     const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/";
     const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
     const PASS = "zigi2026";
@@ -161,16 +161,30 @@
     }
 
     // תקשורת Firebase
-    async function loadAll() {
+  async function loadAll() {
+    console.log("מנסה להתחבר ל-Firebase בכתובת:", BASE_URL);
+    try {
         const res = await fetch(`${BASE_URL}categories.json`);
+        if (!res.ok) throw new Error("תגובת שרת לא תקינה: " + res.status);
+        
         const data = await res.json();
+        console.log("נתונים שהתקבלו:", data);
+
+        if (!data) {
+            console.warn("ה-Database ריק! אין קטגוריות להצגה.");
+        }
+
         ['qCatSelect', 'activeCatSelect', 'filterCat'].forEach(sId => {
             const s = document.getElementById(sId);
             s.innerHTML = sId === 'filterCat' ? '<option value="all">כל הקטגוריות</option>' : '';
             for(let id in data) s.innerHTML += `<option value="${data[id].name}">${data[id].name}</option>`;
         });
         loadQuestions();
+    } catch (error) {
+        console.error("שגיאה קריטית בטעינת נתונים:", error);
+        alert("הסיסמה נכונה, אבל Firebase חוסם את הגישה. בדקי את ה-Rules או את ה-URL.");
     }
+}
 
     async function saveQuestion() {
         const opts = Array.from(document.querySelectorAll('.opt-input')).map(i => i.value);
@@ -221,6 +235,7 @@
 </script>
 </body>
 </html>
+
 
 
 
