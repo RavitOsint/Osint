@@ -3,267 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberQuest - Terminal</title>
+    <title>CyberQuest - Terminal Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #38bdf8;
-            --text-color: #f1f5f9;
-            --error-color: #ef4444;
-            --success-color: #10b981;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Assistant', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
+        :root { --bg-color: #0f172a; --card-bg: #1e293b; --accent-color: #38bdf8; --text-color: #f1f5f9; --error-color: #ef4444; }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Assistant', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .container { width: 100%; max-width: 500px; padding: 20px; }
-
-        .terminal-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: fadeIn 0.8s ease;
-        }
-
-        .terminal-header {
-            background: rgba(0,0,0,0.2);
-            padding: 12px 20px;
-            display: flex;
-            gap: 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
+        .terminal-card { background: var(--card-bg); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .terminal-header { background: rgba(0,0,0,0.2); padding: 12px; display: flex; gap: 8px; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
         .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
-
         .content { padding: 30px; text-align: center; }
-        h2 { font-weight: 700; margin-bottom: 10px; color: var(--accent-color); }
-        p { font-family: 'Fira Code', monospace; font-size: 1.1em; line-height: 1.6; margin-bottom: 20px; }
-
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid #334155;
-            border-radius: 8px;
-            color: white;
-            font-family: 'Fira Code', monospace;
-            box-sizing: border-box;
-            transition: 0.3s;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent-color);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1em;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-        button:disabled { background: #475569; cursor: not-allowed; transform: none; }
-
-        .option-btn {
-            background: #334155;
-            color: white;
-            border: 1px solid #475569;
-            text-align: right;
-            padding: 10px 20px;
-            font-family: 'Assistant', sans-serif;
-        }
-
-        .status-msg { margin-top: 15px; min-height: 24px; font-weight: bold; font-size: 0.9em; }
-        #timer { font-size: 1.5em; color: var(--error-color); margin-top: 10px; font-family: 'Fira Code', monospace; }
-        
+        input { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 2px solid #334155; border-radius: 8px; color: white; font-family: 'Fira Code', monospace; text-align: center; margin: 15px 0; }
+        button { width: 100%; padding: 12px; background: var(--accent-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .option-btn { background: #334155; color: white; border: 1px solid #475569; text-align: right; margin-bottom: 8px; font-family: 'Assistant', sans-serif; }
+        .status { margin-top: 15px; font-weight: bold; font-size: 0.9em; }
         .hidden { display: none !important; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #timer { font-size: 1.5em; color: var(--error-color); font-family: 'Fira Code', monospace; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="terminal-card">
-        <div class="terminal-header">
-            <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-        </div>
-        
+        <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
         <div class="content">
-            <div id="loginScreen">
-                <h2>מערכת CyberQuest</h2>
-                <p>הזן שם משתמש לגישה</p>
-                <input type="text" id="studentName" placeholder="שם מלא..." autocomplete="off">
-                <button onclick="startApp()">התחברות</button>
+            <div id="login">
+                <h2>CyberQuest Login</h2>
+                <input type="text" id="sName" placeholder="שם מלא">
+                <button onclick="start()">התחבר</button>
             </div>
-
-            <div id="waitScreen" class="hidden">
-                <h2>ממתין לפקודת שרת...</h2>
-                <p>המבצע יתחיל ברגע שהמורה תאשר.</p>
-            </div>
-
-            <div id="questionScreen" class="hidden">
-                <h2 id="catTitle">טוען...</h2>
-                <p id="qText"></p>
-                
-                <div id="ansArea">
-                    </div>
-
-                <div id="openAnsArea" class="hidden">
-                    <input type="text" id="userAns" placeholder="הקלד תשובה..." autocomplete="off">
-                    <button id="submitBtn" onclick="processAnswer()">שלח פקודה</button>
+            <div id="game" class="hidden">
+                <h3 id="cat" style="color:var(--accent-color)"></h3>
+                <p id="qText" style="font-family:'Fira Code', monospace"></p>
+                <div id="ansArea"></div>
+                <div id="openArea" class="hidden">
+                    <input type="text" id="userAns" placeholder="הקלד תשובה...">
+                    <button id="sendBtn" onclick="submitAns()">שלח פקודה</button>
                 </div>
-
-                <div class="status-msg" id="msg"></div>
+                <div id="msg" class="status"></div>
                 <div id="timer"></div>
             </div>
-
-            <div id="finishScreen" class="hidden">
-                <h2 style="color: var(--success-color)">המשימה הושלמה!</h2>
-                <p>הנתונים הועלו לשרת המרכזי.</p>
-                <button onclick="location.reload()" style="background: #475569; color: white;">חזרה למסך הראשי</button>
+            <div id="finish" class="hidden">
+                <h2 style="color: #10b981">המערכת נפרצה! 🏆</h2>
+                <button onclick="location.reload()">חזרה להתחלה</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/"; 
-    let studentName = "", questions = [], currentIndex = 0, gameMode = "quiz", isWaiting = false;
+    const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/";
+    let name = "", questions = [], index = 0, mode = "quiz", waiting = false;
 
-    async function startApp() {
-        studentName = document.getElementById('studentName').value.trim();
-        if (!studentName) return;
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('waitScreen').classList.remove('hidden');
+    async function start() {
+        name = document.getElementById('sName').value.trim();
+        if(!name) return;
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('game').classList.remove('hidden');
         sync(); setInterval(sync, 4000);
     }
 
     async function sync() {
-        const res = await fetch(`${BASE_URL}settings.json`);
-        const settings = await res.json();
-        if (!settings) return;
-        gameMode = settings.gameMode || "quiz";
-
-        if (settings.activeCategory && questions.length === 0) {
+        const sRes = await fetch(`${BASE_URL}settings.json`);
+        const settings = await sRes.json();
+        if(!settings) return;
+        mode = settings.gameMode;
+        if(settings.activeCategory && questions.length === 0) {
             const qRes = await fetch(`${BASE_URL}questions.json`);
             const all = await qRes.json();
             questions = Object.values(all || {}).filter(q => q.category === settings.activeCategory);
-            if (questions.length > 0) {
-                document.getElementById('catTitle').innerText = settings.activeCategory;
-                showQuestion();
-            }
+            if(questions.length > 0) { document.getElementById('cat').innerText = settings.activeCategory; showQ(); }
         }
     }
 
-    function showQuestion() {
-        if (currentIndex >= questions.length) {
-            document.getElementById('questionScreen').classList.add('hidden');
-            document.getElementById('finishScreen').classList.remove('hidden');
+    function showQ() {
+        if(index >= questions.length) {
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('finish').classList.remove('hidden');
             return;
         }
-        document.getElementById('waitScreen').classList.add('hidden');
-        document.getElementById('questionScreen').classList.remove('hidden');
-        
-        const q = questions[currentIndex];
+        const q = questions[index];
         document.getElementById('qText').innerText = q.text;
-        document.getElementById('msg').innerText = `משימה ${currentIndex + 1} מתוך ${questions.length}`;
-        
-        const ansArea = document.getElementById('ansArea');
-        const openArea = document.getElementById('openAnsArea');
-        ansArea.innerHTML = "";
-        
-        if (q.type === 'multiple') {
-            openArea.classList.add('hidden');
+        document.getElementById('msg').innerText = `משימה ${index+1} מתוך ${questions.length}`;
+        const aa = document.getElementById('ansArea'), oa = document.getElementById('openArea');
+        aa.innerHTML = "";
+        if(q.type === 'multiple') {
+            oa.classList.add('hidden');
             q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "option-btn";
-                btn.innerText = opt;
-                btn.onclick = () => processAnswer(opt);
-                ansArea.appendChild(btn);
+                const b = document.createElement('button'); b.className="option-btn"; b.innerText=opt;
+                b.onclick = () => submitAns(opt); aa.appendChild(b);
             });
-        } else {
-            openArea.classList.remove('hidden');
-            document.getElementById('userAns').value = "";
-        }
+        } else { oa.classList.remove('hidden'); document.getElementById('userAns').value = ""; }
     }
 
-    async function processAnswer(providedAns) {
-        if (isWaiting) return;
-        const q = questions[currentIndex];
-        const userVal = providedAns || document.getElementById('userAns').value.trim();
-        if (!userVal) return;
+    async function submitAns(val) {
+        if(waiting) return;
+        const q = questions[index], userVal = val || document.getElementById('userAns').value.trim();
+        if(!userVal) return;
+        const correct = (q.answer && userVal.toLowerCase() === q.answer.toLowerCase());
 
-        const isCorrect = (q.answer && userVal.toLowerCase() === q.answer.toLowerCase());
-
-        if (gameMode === 'escape') {
-            if (q.answer && !isCorrect) {
-                penalty();
-                return; // בחדר בריחה לא עוברים שאלה אם טועים ב-Flag
-            }
+        if(mode === 'escape' && q.hasFlag && !correct) {
+            penalty(); return;
         }
 
-        // בבוחן - שומר ועובר תמיד. בחדר בריחה - שומר ועובר כי הגענו לכאן רק אם צדק.
-        await save(q, userVal, isCorrect);
-        currentIndex++;
-        showQuestion();
+        await fetch(`${BASE_URL}submissions.json`, { method:'POST', body: JSON.stringify({
+            student: name, questionText: q.text, userAnswer: userVal, isCorrect: q.hasFlag ? correct : null
+        })});
+        index++; showQ();
     }
 
     function penalty() {
-        isWaiting = true;
-        let timeLeft = 10;
-        const btn = document.getElementById('submitBtn');
-        const input = document.getElementById('userAns');
-        const msg = document.getElementById('msg');
-        
-        if(btn) btn.disabled = true;
-        if(input) input.disabled = true;
-        msg.style.color = "var(--error-color)";
-        msg.innerText = "גישה נדחתה! נועל מערכת...";
-        
-        const interval = setInterval(() => {
-            document.getElementById('timer').innerText = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
-            timeLeft--;
-            if (timeLeft < 0) {
-                clearInterval(interval);
-                document.getElementById('timer').innerText = "";
-                if(btn) btn.disabled = false;
-                if(input) input.disabled = false;
-                msg.innerText = "";
-                isWaiting = false;
-            }
+        waiting = true; let t = 10;
+        document.getElementById('msg').innerText = "טעות בקוד! המערכת נעולה...";
+        const i = setInterval(() => {
+            document.getElementById('timer').innerText = `00:${t<10?'0':''}${t}`;
+            t--; if(t<0) { clearInterval(i); document.getElementById('timer').innerText=""; waiting=false; document.getElementById('msg').innerText=""; }
         }, 1000);
-    }
-
-    async function save(q, ans, isCorrect) {
-        const data = {
-            student: studentName,
-            questionText: q.text,
-            userAnswer: ans,
-            isCorrect: q.answer ? isCorrect : null,
-            timestamp: new Date().toISOString()
-        };
-        await fetch(`${BASE_URL}submissions.json`, { method: 'POST', body: JSON.stringify(data) });
     }
 </script>
 </body>
