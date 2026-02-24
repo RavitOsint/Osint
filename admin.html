@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>CyberQuest Admin</title>
+    <title>CyberQuest Admin - Control Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --sidebar: #1e293b; --bg: #f8fafc; --accent: #38bdf8; --error: #ef4444; --success: #10b981; }
@@ -12,91 +12,149 @@
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .tab-btn { display: block; width: 100%; padding: 15px; margin-bottom: 8px; border: none; background: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .tab-btn.active { background: var(--accent); color: var(--sidebar); }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
         button { background: var(--accent); color: var(--sidebar); border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .opt-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .opt-row input[type="radio"] { width: 20px; cursor: pointer; }
         .student-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; margin-bottom: 10px; border-radius: 10px; cursor: pointer; border: 1px solid #f1f5f9; }
         .hidden { display: none !important; }
+        .exam-item { border-bottom: 1px solid #eee; padding: 15px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <h2>CyberQuest Admin</h2>
-    <button class="tab-btn active" onclick="showTab('qTab', this)">📚 שאלות</button>
-    <button class="tab-btn" onclick="showTab('gradeTab', this)">📊 ציונים</button>
-    <button class="tab-btn" onclick="showTab('setTab', this)">⚙️ הגדרות</button>
+    <button class="tab-btn active" onclick="showTab('qTab', this)">📚 ניהול שאלות</button>
+    <button class="tab-btn" onclick="showTab('gradeTab', this)">📊 ציונים ובדיקה</button>
+    <button class="tab-btn" onclick="showTab('setTab', this)">⚙️ הגדרות מערכת</button>
 </div>
 
 <div class="main">
     <div id="qTab" class="tab-content">
         <div class="card">
-            <h3>הוספת שאלה</h3>
+            <h3>הוספת שאלה חדשה</h3>
+            <label>קטגוריה:</label>
             <select id="qCat"></select>
-            <select id="qType" onchange="toggleF()">
+            
+            <label>סוג שאלה:</label>
+            <select id="qType" onchange="toggleForm()">
                 <option value="open">שאלה פתוחה</option>
-                <option value="multiple">אמריקאית</option>
+                <option value="multiple">שאלה אמריקאית</option>
             </select>
-            <textarea id="qText" placeholder="תוכן השאלה..."></textarea>
-            <input id="qAns" placeholder="התשובה הנכונה (Flag)">
-            <div id="optArea" class="hidden">
-                <p>הזן אופציות (אחת בשורה):</p>
-                <textarea id="qOpts" placeholder="אופציה 1&#10;אופציה 2"></textarea>
+
+            <div id="flagToggleArea">
+                <label><input type="checkbox" id="hasFlag" onchange="toggleForm()"> האם יש תשובה מוגדרת מראש (Flag)?</label>
             </div>
-            <button onclick="saveQ()" style="width:100%">שמור שאלה</button>
+
+            <textarea id="qText" placeholder="תוכן השאלה..." rows="3"></textarea>
+            
+            <div id="openAnswerArea" class="hidden">
+                <input id="qAns" placeholder="הכנס את ה-Flag הנכון">
+            </div>
+
+            <div id="multiAnswerArea" class="hidden">
+                <p>הזן אפשרויות וסמן את הנכונה:</p>
+                <div id="optionsContainer">
+                    </div>
+                <button type="button" onclick="addOptionField()" style="background:#cbd5e1; font-size:0.8em;">+ הוסף תשובה</button>
+            </div>
+
+            <button onclick="saveQuestion()" style="width:100%; margin-top:20px;">שמור שאלה</button>
         </div>
     </div>
 
     <div id="gradeTab" class="tab-content hidden">
         <div id="listArea">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h3>תוצאות</h3>
-                <div>
-                    <button onclick="exportCSV()" style="background:var(--success); color:white">📥 אקסל</button>
-                    <button onclick="clearData()" style="background:var(--error); color:white">🗑️ איפוס</button>
-                </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3>הגשות חניכים</h3>
+                <button onclick="clearAllData()" style="background:var(--error); color:white">🗑️ איפוס הכל</button>
             </div>
-            <div id="grid"></div>
+            <div id="studentsGrid"></div>
         </div>
-        <div id="detArea" class="hidden">
-            <button onclick="back()">⬅️ חזרה</button>
+        <div id="detailArea" class="hidden">
+            <button onclick="backToList()" style="background:#64748b; color:white; margin-bottom:15px;">⬅️ חזרה לרשימה</button>
             <h2 id="detName"></h2>
-            <div id="detCont"></div>
+            <div id="detContent"></div>
         </div>
     </div>
 
     <div id="setTab" class="tab-content hidden">
         <div class="card">
-            <h3>הפעלת קטגוריה</h3>
-            <label>סוג משחק:</label>
+            <h3>הגדרות שידור</h3>
+            <label>מצב משחק:</label>
             <select id="gameMode">
                 <option value="quiz">📝 בוחן (מעבר חופשי)</option>
                 <option value="escape">🏃 חדר בריחה (ענישה על טעות)</option>
             </select>
-            <label>קטגוריה:</label>
+            <label>קטגוריה פעילה:</label>
             <select id="activeCat"></select>
-            <button onclick="saveSet()" style="width:100%; margin-top:10px;">שדר לחניכים</button>
-        </div>
-        <div class="card">
-            <input id="newCat" placeholder="שם קטגוריה חדשה">
-            <button onclick="addCat()">הוסף</button>
+            <button onclick="saveSettings()" style="width:100%; margin-top:15px; background:var(--success); color:white">🚀 הפעל שידור</button>
         </div>
     </div>
 </div>
 
 <script>
     const BASE_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/";
-    let subs = {};
+    let allSubmissions = {};
 
-    function showTab(id, btn) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.remove('hidden');
-        btn.classList.add('active');
-        if(id === 'gradeTab') loadSubs();
+    function toggleForm() {
+        const type = document.getElementById('qType').value;
+        const hasFlag = document.getElementById('hasFlag').checked;
+        
+        document.getElementById('flagToggleArea').classList.toggle('hidden', type === 'multiple');
+        document.getElementById('openAnswerArea').classList.toggle('hidden', type === 'multiple' || !hasFlag);
+        document.getElementById('multiAnswerArea').classList.toggle('hidden', type !== 'multiple');
+
+        if (type === 'multiple' && document.getElementById('optionsContainer').children.length === 0) {
+            for(let i=0; i<3; i++) addOptionField();
+        }
     }
 
-    function toggleF() {
-        document.getElementById('optArea').classList.toggle('hidden', document.getElementById('qType').value !== 'multiple');
+    function addOptionField() {
+        const container = document.getElementById('optionsContainer');
+        const div = document.createElement('div');
+        div.className = "opt-row";
+        div.innerHTML = `
+            <input type="radio" name="correctOpt">
+            <input type="text" class="opt-text" placeholder="תשובה אפשרית...">
+        `;
+        container.appendChild(div);
+    }
+
+    async function saveQuestion() {
+        const type = document.getElementById('qType').value;
+        let finalAns = "";
+        let options = null;
+        let hasFlag = document.getElementById('hasFlag').checked;
+
+        if (type === 'multiple') {
+            hasFlag = true;
+            const rows = document.querySelectorAll('.opt-row');
+            options = [];
+            rows.forEach(row => {
+                const text = row.querySelector('.opt-text').value;
+                if (text) {
+                    options.push(text);
+                    if (row.querySelector('input[type="radio"]').checked) finalAns = text;
+                }
+            });
+        } else {
+            finalAns = hasFlag ? document.getElementById('qAns').value.trim() : "";
+        }
+
+        const data = {
+            category: document.getElementById('qCat').value,
+            type: type,
+            text: document.getElementById('qText').value,
+            answer: finalAns,
+            options: options,
+            hasFlag: hasFlag
+        };
+
+        await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
+        alert("השאלה נשמרה!");
+        location.reload();
     }
 
     async function init() {
@@ -105,91 +163,60 @@
             const s = document.getElementById(id); s.innerHTML = "";
             for(let k in cats) s.innerHTML += `<option value="${cats[k].name}">${cats[k].name}</option>`;
         });
-    }
-
-    async function saveQ() {
-        const type = document.getElementById('qType').value;
-        const opts = document.getElementById('qOpts').value.split('\n').filter(v => v.trim());
-        const data = {
-            category: document.getElementById('qCat').value,
-            type: type,
-            text: document.getElementById('qText').value,
-            answer: document.getElementById('qAns').value.trim(),
-            options: type === 'multiple' ? opts : null
-        };
-        await fetch(`${BASE_URL}questions.json`, { method: 'POST', body: JSON.stringify(data) });
-        alert("נשמר");
+        toggleForm();
     }
 
     async function loadSubs() {
         const r = await fetch(`${BASE_URL}submissions.json`);
-        subs = await r.json() || {};
-        const g = document.getElementById('grid'); g.innerHTML = "";
-        const names = [...new Set(Object.values(subs).map(s => s.student))];
+        allSubmissions = await r.json() || {};
+        const grid = document.getElementById('studentsGrid'); grid.innerHTML = "";
+        const names = [...new Set(Object.values(allSubmissions).map(s => s.student))];
         names.forEach(n => {
-            const my = Object.values(subs).filter(s => s.student === n);
-            const ok = my.filter(s => s.isCorrect === true).length;
-            const score = Math.round((ok/my.length)*100) || 0;
-            const d = document.createElement('div'); d.className="student-row";
-            d.innerHTML = `<span>👤 ${n}</span><span>${score}%</span>`;
-            d.onclick = () => view(n); g.appendChild(d);
+            const div = document.createElement('div');
+            div.className = "student-row";
+            div.innerHTML = `<span>👤 ${n}</span>`;
+            div.onclick = () => viewDetails(n);
+            grid.appendChild(div);
         });
     }
 
-    function view(n) {
+    function viewDetails(name) {
         document.getElementById('listArea').classList.add('hidden');
-        document.getElementById('detArea').classList.remove('hidden');
-        document.getElementById('detName').innerText = n;
-        const c = document.getElementById('detCont'); c.innerHTML = "";
-        Object.keys(subs).filter(id => subs[id].student === n).forEach(id => {
-            const s = subs[id];
-            c.innerHTML += `<div style="border-bottom:1px solid #eee; padding:10px;">
-                <p><strong>${s.questionText}</strong></p>
-                <p>תשובה: ${s.userAnswer} ${s.isCorrect === true ? '✅' : (s.isCorrect === false ? '❌' : '⏳')}</p>
-                ${s.isCorrect === null ? `
-                    <button onclick="mark('${id}', true, '${n}')">נכון</button>
-                    <button onclick="mark('${id}', false, '${n}')">שגוי</button>
-                ` : ''}
-            </div>`;
+        document.getElementById('detailArea').classList.remove('hidden');
+        document.getElementById('detName').innerText = name;
+        const cont = document.getElementById('detContent'); cont.innerHTML = "";
+
+        Object.keys(allSubmissions).filter(id => allSubmissions[id].student === name).forEach(id => {
+            const s = allSubmissions[id];
+            const div = document.createElement('div');
+            div.className = "exam-item";
+            div.innerHTML = `
+                <p><strong>שאלה:</strong> ${s.questionText}</p>
+                <p><strong>תשובה:</strong> <span style="color:blue">${s.userAnswer}</span></p>
+                <div id="ctrl-${id}">
+                    ${s.isCorrect === true ? '✅ נכון' : (s.isCorrect === false ? '❌ שגוי' : '⏳ ממתין לבדיקה')}
+                    <br>
+                    <button onclick="mark('${id}', true, '${name}')" style="background:var(--success); font-size:0.7em; padding:5px; margin-top:5px;">סמן כנכון</button>
+                    <button onclick="mark('${id}', false, '${name}')" style="background:var(--error); font-size:0.7em; padding:5px; margin-top:5px; color:white;">סמן כשגוי</button>
+                </div>
+            `;
+            cont.appendChild(div);
         });
     }
 
-    async function mark(id, v, n) {
-        await fetch(`${BASE_URL}submissions/${id}/isCorrect.json`, { method: 'PUT', body: JSON.stringify(v) });
-        loadSubs().then(() => view(n));
+    async function mark(id, val, name) {
+        await fetch(`${BASE_URL}submissions/${id}/isCorrect.json`, { method: 'PUT', body: JSON.stringify(val) });
+        loadSubs().then(() => viewDetails(name));
     }
 
-    function back() { document.getElementById('detArea').classList.add('hidden'); document.getElementById('listArea').classList.remove('hidden'); }
-
-    async function saveSet() {
+    async function saveSettings() {
         const d = { gameMode: document.getElementById('gameMode').value, activeCategory: document.getElementById('activeCat').value };
         await fetch(`${BASE_URL}settings.json`, { method: 'PUT', body: JSON.stringify(d) });
-        alert("שידור הופעל");
+        alert("הגדרות עודכנו!");
     }
 
-    async function addCat() {
-        const name = document.getElementById('newCat').value;
-        await fetch(`${BASE_URL}categories.json`, { method: 'POST', body: JSON.stringify({name}) });
-        init();
-    }
-
-    async function clearData() {
-        if(confirm("למחוק הכל?")) { await fetch(`${BASE_URL}submissions.json`, { method: 'DELETE' }); loadSubs(); }
-    }
-
-    function exportCSV() {
-        let csv = "\uFEFFשם,ציון\n";
-        const names = [...new Set(Object.values(subs).map(s => s.student))];
-        names.forEach(n => {
-            const my = Object.values(subs).filter(s => s.student === n);
-            const score = Math.round((my.filter(s => s.isCorrect === true).length/my.length)*100) || 0;
-            csv += `${n},${score}%\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "cyberquest_results.csv"; link.click();
-    }
+    function backToList() { document.getElementById('detailArea').classList.add('hidden'); document.getElementById('listArea').classList.remove('hidden'); }
+    async function clearAllData() { if(confirm("למחוק הכל?")) { await fetch(`${BASE_URL}submissions.json`, {method:'DELETE'}); location.reload(); } }
 
     init();
 </script>
