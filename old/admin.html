@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberQuest Admin - Ultra Wide Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #0f172a; --sidebar-bg: #1e293b; --card-bg: #1e293b; 
+            --accent: #38bdf8; --text: #f1f5f9; --error: #ef4444; --success: #10b981; 
+        }
+        
+        /* פריסת מסך מלאה */
+        html, body { height: 100%; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+        body { font-family: 'Assistant', sans-serif; background: var(--bg); color: var(--text); display: flex; }
+        
+        /* מסך כניסה */
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .login-box { background: var(--sidebar-bg); padding: 40px; border-radius: 16px; text-align: center; border: 1px solid var(--accent); width: 400px; }
+
+        /* תפריט צד קבוע */
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; position: fixed; height: 100vh; border-left: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; }
+        
+        /* תוכן ראשי - פריסה על כל השאר */
+        .main { margin-right: 260px; width: calc(100% - 260px); min-height: 100vh; padding: 30px; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* כרטיסיות ברוחב מלא */
+        .card { background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; width: 100%; box-sizing: border-box; flex-grow: 0; }
+        
+        .tab-btn { display: block; width: 100%; padding: 18px; margin-bottom: 8px; border: none; background: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 8px; font-weight: bold; font-size: 1.1rem; }
+        .tab-btn.active { background: var(--accent); color: var(--bg); }
+        
+        input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #334155; border-radius: 8px; background: rgba(0,0,0,0.2); color: white; font-size: 1.1rem; box-sizing: border-box; }
+        button { background: var(--accent); color: var(--bg); border: none; padding: 14px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; }
+        button:hover { filter: brightness(1.1); }
+        
+        /* רשימות בפריסה רחבה */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box; transition: 0.2s; }
+        .list-item:hover { background: rgba(255,255,255,0.02); }
+        
+        .q-num { background: var(--accent); color: var(--bg); padding: 4px 12px; border-radius: 6px; font-weight: bold; margin-left: 20px; font-family: 'Fira Code', monospace; }
+        
+        .cat-checkboxes { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding: 20px; border: 1px solid #334155; border-radius: 8px; margin: 15px 0; background: rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; }
+        .cat-checkboxes label { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+        .cat-checkboxes label:hover { border-color: var(--accent); }
+        .cat-checkboxes input { width: 20px; height: 20px; margin: 0; }
+
+        .hidden { display: none !important; }
+        .btn-danger { background: var(--error); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+
+        .opt-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; width: 100%; }
+        .opt-row input[type="radio"] { width: 28px; height: 28px; flex-shrink: 0; }
+        
+        .tab-content { width: 100%; }
+        
+        h3 { border-right: 4px solid var(--accent); padding-right: 15px; margin-bottom: 25px; }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div class="login-box">
+        <h1 style="color:var(--accent); margin-bottom:10px;">מערכת ניהול</h1>
+        <p style="opacity:0.7">Admin Terminal v3.0</p>
+        <input type="password" id="passInput" placeholder="Password" onkeypress="if(event.key==='Enter') checkPass()">
+        <button onclick="checkPass()" style="width: 100%; margin-top: 15px;">כניסה</button>
+    </div>
+</div>
+
+<div id="adminPanel" class="hidden">
+    <div class="sidebar">
+        <h2 style="color:var(--accent); text-align:center; letter-spacing: 2px;">ניתוב</h2>
+        <hr style="opacity:0.1; margin-bottom:20px;">
+        <button class="tab-btn active" onclick="showTab('qAddTab', this)">➕ הוספת שאלה</button>
+        <button class="tab-btn" onclick="showTab('manageQsTab', this)">📝 ניהול שאלות</button>
+        <button class="tab-btn" onclick="showTab('catTab', this)">📂 ניהול קטגוריות</button>
+        <button class="tab-btn" onclick="showTab('gradeTab', this)">📊 ציונים</button>
+        <button class="tab-btn" onclick="showTab('setTab', this)">🚀 שידור חי</button>
+    </div>
+
+    <div class="main">
+        <div id="qAddTab" class="tab-content">
+            <div class="card">
+                <h3>יצירת שאלה חדשה במערכת</h3>
+                <label>שיוך לקטגוריות (ניתן לבחור כמה):</label>
+                <div id="newQ-cats" class="cat-checkboxes"></div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <label>סוג שאלה:</label>
+                        <select id="qType" onchange="toggleAnsForm('new')">
+                            <option value="open">שאלה פתוחה (טקסט חופשי)</option>
+                            <option value="multiple">שאלה אמריקאית (בחירה)</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:center; padding-top:30px;">
+                        <label style="cursor:pointer;"><input type="checkbox" id="hasFlag" checked onchange="toggleAnsForm('new')" style="width:20px; height:20px; vertical-align:middle;"> בדיקה אוטומטית (Flag Mode)</label>
+                    </div>
+                </div>
+
+                <label>תוכן השאלה:</label>
+                <textarea id="qText" placeholder="הכנס את תוכן השאלה כאן..." rows="5"></textarea>
+                
+                <div id="openAnsArea">
+                    <label>Flag / תשובה נכונה:</label>
+                    <input id="qAns" placeholder="התשובה שתיחשב כנכונה באופן אוטומטי">
+                </div>
+                
+                <div id="multiAnsArea" class="hidden">
+                    <label>אפשרויות תשובה (סמן את העיגול ליד התשובה הנכונה):</label>
+                    <div id="optsContainer"></div>
+                    <button type="button" onclick="addOptRow('optsContainer')" class="btn-outline" style="margin-top:10px;">+ הוסף אפשרות תשובה</button>
+                </div>
+                
+                <button onclick="saveNewQ()" class="btn-success" style="width:100%; margin-top:30px; font-size:1.2rem;">שמור שאלה במאגר המידע</button>
+            </div>
+        </div>
+
+        <div id="manageQsTab" class="tab-content hidden">
+            <div class="card">
+                <h3>רשימת שאלות מלאה (Full View)</h3>
+                <div id="qsList" style="width:100%;"></div>
+            </div>
+        </div>
+
+        <div id="editQTab" class="tab-content hidden">
+            <div class="card">
+                <button onclick="showTab('manageQsTab')" class="btn-outline">⬅️ חזור לרשימה המלאה</button>
+                <h3>עריכת נתוני שאלה</h3>
+                <input id="editQId" type="hidden">
+                <label>עדכון קטגוריות משויכות:</label>
+                <div id="editQ-cats" class="cat-checkboxes"></div>
+                <label>תוכן השאלה:</label>
+                <textarea id="editQText" rows="6"></textarea>
+                <div id="editQ-ansArea"></div>
+                <button onclick="updateQ()" class="btn-success" style="width:100%; margin-top:20px;">עדכן נתונים בשרת</button>
+            </div>
+        </div>
+
+        <div id="catTab" class="tab-content hidden">
+            <div class="card">
+                <h3>כל הקטגוריות במערכת</h3>
+                <div id="catsList"></div>
+                
+                <div class="card" style="margin-top:30px; background: rgba(0,0,0,0.2);">
+                    <h4>הוספת קטגוריה חדשה</h4>
+                    <div style="display:flex; gap:15px;">
+                        <input id="newCatName" placeholder="שם הקטגוריה (למשל: OSINT, SQL Injection...)">
+                        <button onclick="addCategory()" style="flex-shrink:0;">הוסף למערכת</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="editCatTab" class="tab-content hidden">
+            <div class="card">
+                <button onclick="showTab('catTab')" class="btn-outline">⬅️ חזרה לניהול קטגוריות</button>
+                <h3 id="editCatTitle"></h3>
+                <div id="catQsPreview"></div>
+            </div>
+        </div>
+
+        <div id="gradeTab" class="tab-content hidden">
+            <div class="card" id="listArea">
+                <h3>מעקב הגשות בזמן אמת</h3>
+                <div id="studentsGrid"></div>
+            </div>
+            <div class="card hidden" id="detailArea">
+                <button onclick="backToList()" class="btn-outline">⬅️ חזרה לרשימת החניכים</button>
+                <h2 id="detName" style="color:var(--accent)"></h2>
+                <div id="detContent"></div>
+            </div>
+        </div>
+
+        <div id="setTab" class="tab-content hidden">
+            <div class="card">
+                <h3>הגדרות שידור וניהול אירוע</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                    <div>
+                        <label>בחר קטגוריה להפעלה מיידית:</label>
+                        <select id="activeCatSelect"></select>
+                    </div>
+                    <div>
+                        <label>מצב משחק חניכים:</label>
+                        <select id="gameMode">
+                            <option value="quiz">בוחן רגיל (מעבר חופשי בין שאלות)</option>
+                            <option value="escape">חדר בריחה (טעות נועלת את המערכת)</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="broadcast()" class="btn-success" style="width:100%; margin-top:30px; font-size:1.3rem; padding:20px;">🚀 הפעל שידור (Broadcast)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DB_URL = "https://osint-751d7-default-rtdb.europe-west1.firebasedatabase.app/";
+    let cats = {}, qsts = {}, subs = {};
+
+    function checkPass() {
+        if(document.getElementById('passInput').value === 'zigi2026') {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            refreshData();
+        } else alert("Access Denied");
+    }
+
+    async function refreshData() {
+        const [rC, rQ] = await Promise.all([fetch(`${DB_URL}categories.json`), fetch(`${DB_URL}questions.json`)]);
+        cats = await rC.json() || {};
+        qsts = await rQ.json() || {};
+        updateSelectors();
+        renderQs();
+        renderCats();
+    }
+
+    function updateSelectors() {
+        const catBox = document.getElementById('newQ-cats');
+        const sel = document.getElementById('activeCatSelect');
+        catBox.innerHTML = ""; sel.innerHTML = "";
+        for(let id in cats) {
+            catBox.innerHTML += `<label><input type="checkbox" value="${id}"> <span>${cats[id].name}</span></label>`;
+            sel.innerHTML += `<option value="${id}">${cats[id].name}</option>`;
+        }
+    }
+
+    function addOptRow(contId, val='', isCorrect=false) {
+        const div = document.createElement('div'); div.className = "opt-row";
+        div.innerHTML = `<input type="radio" name="correct" ${isCorrect?'checked':''}> 
+                         <input type="text" class="opt-text" value="${val}" placeholder="הזן תשובה אפשרית...">`;
+        document.getElementById(contId).appendChild(div);
+    }
+
+    function toggleAnsForm(mode, typeVal) {
+        const type = typeVal || document.getElementById('qType').value;
+        const hasFlag = document.getElementById('hasFlag').checked;
+        document.getElementById('openAnsArea').classList.toggle('hidden', type==='multiple' || !hasFlag);
+        document.getElementById('multiAnsArea').classList.toggle('hidden', type!=='multiple');
+        if(type==='multiple' && document.getElementById('optsContainer').children.length === 0) {
+            for(let i=0; i<3; i++) addOptRow('optsContainer');
+        }
+    }
+
+    async function saveNewQ() {
+        const selected = Array.from(document.querySelectorAll('#newQ-cats input:checked')).map(i => i.value);
+        const type = document.getElementById('qType').value;
+        let ans = "", opts = null, hasFlag = document.getElementById('hasFlag').checked;
+
+        if(type==='multiple') {
+            hasFlag = true; opts = [];
+            document.querySelectorAll('#optsContainer .opt-row').forEach(row => {
+                const txt = row.querySelector('.opt-text').value;
+                if(txt) { opts.push(txt); if(row.querySelector('input').checked) ans = txt; }
+            });
+        } else ans = hasFlag ? document.getElementById('qAns').value : "";
+
+        await fetch(`${DB_URL}questions.json`, { method: 'POST', body: JSON.stringify({
+            text: document.getElementById('qText').value, type, answer: ans, options: opts, hasFlag, categoryIds: selected
+        })});
+        refreshData(); showTab('manageQsTab');
+    }
+
+    function renderQs() {
+        const list = document.getElementById('qsList'); list.innerHTML = "";
+        let count = 1;
+        for(let id in qsts) {
+            const q = qsts[id];
+            const div = document.createElement('div'); div.className = "list-item";
+            div.innerHTML = `<div style="display:flex; align-items:center;"><span class="q-num">${count++}</span> 
+                <span style="font-size:1.1rem;">${q.text.substring(0,100)}${q.text.length > 100 ? '...' : ''}</span></div>
+                <div><button onclick="openEditQ('${id}')">עריכה</button>
+                <button onclick="deleteQ('${id}')" class="btn-danger" style="margin-right:10px;">מחיקה</button></div>`;
+            list.appendChild(div);
+        }
+    }
+
+    function openEditQ(id) {
+        const q = qsts[id];
+        document.getElementById('editQId').value = id;
+        document.getElementById('editQText').value = q.text;
+        showTab('editQTab');
+        
+        const catArea = document.getElementById('editQ-cats'); catArea.innerHTML = "";
+        for(let cId in cats) {
+            const isChecked = (q.categoryIds || []).includes(cId) ? 'checked' : '';
+            catArea.innerHTML += `<label><input type="checkbox" value="${cId}" ${isChecked}> <span>${cats[cId].name}</span></label>`;
+        }
+
+        const ansArea = document.getElementById('editQ-ansArea'); ansArea.innerHTML = "";
+        if(q.type === 'multiple') {
+            ansArea.innerHTML = `<div id="editOpts" style="margin-top:15px;"></div><button onclick="addOptRow('editOpts')" class="btn-outline">+ הוסף אפשרות</button>`;
+            q.options.forEach(opt => addOptRow('editOpts', opt, opt === q.answer));
+        } else {
+            ansArea.innerHTML = `<div style="margin-top:15px;"><label><input type="checkbox" id="editHasFlag" ${q.hasFlag?'checked':''}> בדיקה אוטומטית</label>
+                                 <input id="editAns" value="${q.answer || ''}" placeholder="תשובה נכונה"></div>`;
+        }
+    }
+
+    async function updateQ() {
+        const id = document.getElementById('editQId').value;
+        const catIds = Array.from(document.querySelectorAll('#editQ-cats input:checked')).map(i => i.value);
+        const q = qsts[id];
+        let ans = q.answer, opts = q.options, hasFlag = q.hasFlag;
+
+        if(q.type === 'multiple') {
+            opts = [];
+            document.querySelectorAll('#editOpts .opt-row').forEach(row => {
+                const txt = row.querySelector('.opt-text').value;
+                if(txt) { opts.push(txt); if(row.querySelector('input').checked) ans = txt; }
+            });
+        } else {
+            hasFlag = document.getElementById('editHasFlag').checked;
+            ans = hasFlag ? document.getElementById('editAns').value : "";
+        }
+
+        await fetch(`${DB_URL}questions/${id}.json`, { method: 'PUT', body: JSON.stringify({ ...q, text: document.getElementById('editQText').value, categoryIds: catIds, answer: ans, options: opts, hasFlag }) });
+        refreshData(); showTab('manageQsTab');
+    }
+
+    async function deleteQ(id) { if(confirm("למחוק שאלה זו לצמיתות?")) { await fetch(`${DB_URL}questions/${id}.json`, {method:'DELETE'}); refreshData(); } }
+
+    function renderCats() {
+        const list = document.getElementById('catsList'); list.innerHTML = "";
+        for(let id in cats) {
+            list.innerHTML += `<div class="list-item"><span><strong style="font-size:1.2rem;">${cats[id].name}</strong></span>
+                <div><button onclick="viewCatDetails('${id}')">צפייה בשאלות</button>
+                <button onclick="deleteCat('${id}')" class="btn-danger" style="margin-right:10px;">מחק קטגוריה</button></div></div>`;
+        }
+    }
+
+    function viewCatDetails(id) {
+        document.getElementById('editCatTitle').innerText = `שיוך קטגוריה: ${cats[id].name}`;
+        const preview = document.getElementById('catQsPreview'); preview.innerHTML = "";
+        let c = 1;
+        for(let qId in qsts) {
+            if((qsts[qId].categoryIds || []).includes(id)) {
+                preview.innerHTML += `<div class="list-item"><span style="font-family:'Fira Code'">${c++}. ${qsts[qId].text}</span> <span style="color:var(--success)">[${qsts[qId].answer}]</span></div>`;
+            }
+        }
+        showTab('editCatTab');
+    }
+
+    async function addCategory() {
+        const name = document.getElementById('newCatName').value;
+        if(name) { await fetch(`${DB_URL}categories.json`, { method: 'POST', body: JSON.stringify({name}) }); document.getElementById('newCatName').value=""; refreshData(); }
+    }
+
+    async function deleteCat(id) { if(confirm("מחיקת קטגוריה לא תמחק את השאלות. להמשיך?")) { await fetch(`${DB_URL}categories/${id}.json`, {method:'DELETE'}); refreshData(); } }
+
+    async function broadcast() {
+        const cId = document.getElementById('activeCatSelect').value;
+        await fetch(`${DB_URL}settings.json`, { method: 'PUT', body: JSON.stringify({
+            gameMode: document.getElementById('gameMode').value, activeCategoryId: cId, activeCategoryName: cats[cId].name
+        })});
+        alert("השידור הופעל בהצלחה!");
+    }
+
+    function showTab(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.remove('hidden');
+        if(btn) btn.classList.add('active');
+        if(id === 'gradeTab') loadGrades();
+    }
+
+    async function loadGrades() {
+        const r = await fetch(`${DB_URL}submissions.json`); subs = await r.json() || {};
+        const grid = document.getElementById('studentsGrid'); grid.innerHTML = "";
+        const names = [...new Set(Object.values(subs).map(s => s.student))];
+        names.forEach(n => {
+            grid.innerHTML += `<div class="list-item" onclick="viewStudent('${n}')" style="cursor:pointer"><span>👤 <strong style="font-size:1.1rem;">${n}</strong></span> <button>בדוק הגשות</button></div>`;
+        });
+    }
+
+    function viewStudent(name) {
+        document.getElementById('listArea').classList.add('hidden');
+        document.getElementById('detailArea').classList.remove('hidden');
+        document.getElementById('detName').innerText = `דו"ח פעילות: ${name}`;
+        const cont = document.getElementById('detContent'); cont.innerHTML = "";
+        Object.keys(subs).filter(id => subs[id].student === name).forEach(id => {
+            const s = subs[id];
+            cont.innerHTML += `<div class="card" style="border-right: 5px solid ${s.isCorrect ? 'var(--success)' : 'var(--error)'}">
+                <p><strong>${s.questionText}</strong></p>
+                <p>תשובת חניך: <span style="color:var(--accent); font-family:'Fira Code'">${s.userAnswer}</span></p>
+                <p>סטטוס: ${s.isCorrect ? '✅ תקין' : (s.isCorrect === false ? '❌ שגוי' : '⏳ ממתין לבדיקה')}</p>
+                <div class="${s.hasFlag ? 'hidden' : ''}" style="margin-top:15px;">
+                    <button onclick="markManual('${id}', true, '${name}')" class="btn-success">סמן כתקין</button>
+                    <button onclick="markManual('${id}', false, '${name}')" class="btn-danger">סמן כשגוי</button>
+                </div>
+            </div>`;
+        });
+    }
+
+    async function markManual(id, val, name) {
+        await fetch(`${DB_URL}submissions/${id}/isCorrect.json`, { method: 'PUT', body: JSON.stringify(val) });
+        loadGrades().then(() => viewStudent(name));
+    }
+
+    function backToList() { document.getElementById('detailArea').classList.add('hidden'); document.getElementById('listArea').classList.remove('hidden'); }
+</script>
+</body>
+</html>
+
+
+
+

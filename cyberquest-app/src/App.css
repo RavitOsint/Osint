@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════════════════════
+   App.css — Landing Page Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.landing-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-xl);
+}
+
+/* ── Ambient Orbs ────────────────────────────────────────── */
+.landing-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.orb-a {
+  width: 600px;
+  height: 600px;
+  background: rgba(56, 189, 248, 0.1);
+  top: -200px;
+  right: -100px;
+  animation: float 10s ease-in-out infinite;
+}
+
+.orb-b {
+  width: 500px;
+  height: 500px;
+  background: rgba(129, 140, 248, 0.07);
+  bottom: -150px;
+  left: -100px;
+  animation: float 12s ease-in-out infinite reverse;
+}
+
+.orb-c {
+  width: 350px;
+  height: 350px;
+  background: rgba(167, 139, 250, 0.06);
+  top: 40%;
+  left: 60%;
+  animation: float 14s ease-in-out infinite;
+}
+
+/* ── Container ───────────────────────────────────────────── */
+.landing-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 720px;
+}
+
+.landing-content {
+  text-align: center;
+}
+
+/* ── Logo ────────────────────────────────────────────────── */
+.landing-symbol {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: var(--space-lg);
+  filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.6));
+  animation: float 4s ease-in-out infinite;
+}
+
+.landing-title {
+  font-family: var(--font-mono);
+  font-size: 3.5rem;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-md);
+}
+
+.landing-description {
+  font-size: 1.15rem;
+  margin-bottom: var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.landing-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2xl);
+}
+
+/* ── Portal Cards ────────────────────────────────────────── */
+.landing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.landing-card {
+  position: relative;
+  padding: var(--space-xl) var(--space-lg);
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-base);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.landing-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), transparent 50%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.landing-card:hover::before {
+  opacity: 1;
+}
+
+.landing-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl), 0 0 40px rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+
+.card-student:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: var(--shadow-xl), 0 0 40px rgba(16, 185, 129, 0.08);
+}
+
+.card-admin:hover {
+  border-color: rgba(129, 140, 248, 0.4);
+  box-shadow: var(--shadow-xl), 0 0 40px rgba(129, 140, 248, 0.08);
+}
+
+.card-icon-wrap {
+  margin-bottom: var(--space-lg);
+}
+
+.card-main-icon {
+  font-size: 2.8rem;
+  display: block;
+}
+
+.landing-card h2 {
+  font-size: 1.3rem;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+}
+
+.landing-card p {
+  font-size: 0.9rem;
+  margin-bottom: var(--space-lg);
+  line-height: 1.6;
+}
+
+.card-arrow {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  transition: all var(--transition-base);
+}
+
+.landing-card:hover .card-arrow {
+  color: var(--accent-primary);
+  transform: translateX(-6px);
+}
+
+/* ── Stats Bar ───────────────────────────────────────────── */
+.landing-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xl);
+  padding: var(--space-lg) var(--space-xl);
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-light);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .landing-title {
+    font-size: 2.5rem;
+  }
+
+  .landing-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-stats {
+    flex-direction: column;
+    gap: var(--space-md);
+    border-radius: var(--radius-lg);
+  }
+
+  .stat-divider {
+    width: 40px;
+    height: 1px;
+  }
+}
