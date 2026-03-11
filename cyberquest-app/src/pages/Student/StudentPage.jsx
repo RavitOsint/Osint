@@ -4,6 +4,7 @@ import Button from '../../components/Button/Button';
 import Input from '../../components/Input/Input';
 import { useStudentSync, usePenaltyTimer } from '../../hooks/useStudentSync';
 import { addSubmission } from '../../services/firebase';
+import logo from '../../assets/logo.png';
 import './StudentPage.css';
 
 const PHASES = {
@@ -11,6 +12,17 @@ const PHASES = {
     WAITING: 'waiting',
     CHALLENGE: 'challenge',
     COMPLETE: 'complete',
+};
+
+// Helper to render bold text
+const renderTextWithBold = (text) => {
+    if (!text) return null;
+    return text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+    });
 };
 
 export default function StudentPage() {
@@ -46,7 +58,7 @@ export default function StudentPage() {
 
         // Escape room mode: penalty on wrong flag answers
         if (settings?.gameMode === 'escape' && q.hasFlag && !isCorrect) {
-            setFeedback('⚠️ זוהתה פריצה לא מורשית! נועל מערכת...');
+            setFeedback('⚠️ זוהתה תשובה שגויה! נועל מערכת...');
             startPenalty();
             return;
         }
@@ -86,8 +98,8 @@ export default function StudentPage() {
                     {phase === PHASES.LOGIN && (
                         <div className="phase-content animate-fade-in-up">
                             <div className="student-logo">
-                                <span className="logo-symbol">⟁</span>
-                                <h1 className="text-gradient">CyberQuest</h1>
+                                <img src={logo} className="logo-image" alt="Logo" />
+                                <h1 className="text-gradient">אתגר ענף שיטור דיגיטלי</h1>
                                 <p className="student-subtitle">Terminal Access Portal</p>
                             </div>
 
@@ -143,7 +155,36 @@ export default function StudentPage() {
                             </div>
 
                             <div className="question-area">
-                                <p className="question-text">{currentQuestion.text}</p>
+                                {currentQuestion.title && (
+                                    <h2 className="question-title">{renderTextWithBold(currentQuestion.title)}</h2>
+                                )}
+                                <p className="question-text">{renderTextWithBold(currentQuestion.text)}</p>
+                                {currentQuestion.imageUrl && (
+                                    <>
+                                        <div className="question-image-container animate-fade-in">
+                                            <img
+                                                src={currentQuestion.imageUrl}
+                                                alt="Challenge"
+                                                className="question-image"
+                                            />
+                                        </div>
+                                        <div className="img-download-area">
+                                            <Button
+                                                variant="success"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const link = document.createElement('a');
+                                                    link.href = currentQuestion.imageUrl;
+                                                    link.download = `osint_target_${Date.now()}`;
+                                                    link.click();
+                                                }}
+                                                icon="📥"
+                                            >
+                                                הורדה
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             {/* Multiple choice */}
@@ -163,8 +204,24 @@ export default function StudentPage() {
                                 </div>
                             )}
 
+                            {/* Explanation (No answer needed) */}
+                            {currentQuestion.type === 'explanation' && (
+                                <div className="explanation-actions">
+                                    <Button
+                                        onClick={() => handleSubmit('הבנתי')}
+                                        fullWidth
+                                        disabled={isLocked}
+                                        icon="✅"
+                                        variant="success"
+                                        size="lg"
+                                    >
+                                        הבנתי / המשך
+                                    </Button>
+                                </div>
+                            )}
+
                             {/* Open answer */}
-                            {currentQuestion.type !== 'multiple' && (
+                            {currentQuestion.type !== 'multiple' && currentQuestion.type !== 'explanation' && (
                                 <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="answer-form">
                                     <Input
                                         id="answer-input"
@@ -176,7 +233,7 @@ export default function StudentPage() {
                                         autoFocus
                                     />
                                     <Button type="submit" fullWidth disabled={isLocked} icon="⚡">
-                                        שלח פקודה
+                                        שלח מענה
                                     </Button>
                                 </form>
                             )}

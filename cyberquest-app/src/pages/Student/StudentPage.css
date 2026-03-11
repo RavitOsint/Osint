@@ -62,12 +62,14 @@
     margin-bottom: var(--space-xl);
 }
 
-.logo-symbol {
-    font-size: 3.5rem;
+.logo-image {
+    width: 160px;
+    height: 160px;
     display: block;
-    margin-bottom: var(--space-sm);
-    filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.5));
+    margin: 0 auto var(--space-md);
+    filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.4));
     animation: float 4s ease-in-out infinite;
+    object-fit: contain;
 }
 
 .student-logo h1 {
@@ -216,11 +218,52 @@
     border: 1px solid var(--border-subtle);
 }
 
+.question-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: var(--space-md);
+    color: transparent;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    text-align: center;
+    letter-spacing: 0.05em;
+}
+
 .question-text {
     font-family: var(--font-mono);
-    font-size: 1.05rem;
+    font-size: 1.25rem;
     line-height: 1.8;
     color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+.question-text strong {
+    color: var(--accent-primary);
+    font-weight: 800;
+}
+
+.question-image-container {
+    margin-top: var(--space-lg);
+    display: flex;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.question-image {
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    object-fit: contain;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.img-download-area {
+    margin-top: var(--space-md);
+    display: flex;
+    justify-content: center;
 }
 
 /* ── Multiple Choice Options ─────────────────────────────── */
@@ -283,7 +326,8 @@
 }
 
 /* ── Answer Form ─────────────────────────────────────────── */
-.answer-form {
+.answer-form,
+.explanation-actions {
     margin-top: 0;
 }
 

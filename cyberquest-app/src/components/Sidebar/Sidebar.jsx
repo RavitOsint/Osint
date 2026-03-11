@@ -1,3 +1,4 @@
+import logo from '../../assets/logo.png';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
@@ -13,9 +14,9 @@ export default function Sidebar({ activeTab, onTabChange }) {
         <aside className="sidebar" role="navigation" aria-label="Admin navigation">
             <div className="sidebar-header">
                 <div className="sidebar-logo">
-                    <span className="sidebar-logo-icon">⟁</span>
+                    <img src={logo} className="sidebar-logo-img" alt="Logo" />
                     <div>
-                        <h2 className="sidebar-brand">CYBERQUEST</h2>
+                        <h2 className="sidebar-brand">DASHBOARD</h2>
                         <span className="sidebar-version">Admin Panel v5.0</span>
                     </div>
                 </div>

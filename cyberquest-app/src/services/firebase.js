@@ -59,6 +59,10 @@ export async function addCategory(name) {
     return postJSON('categories', { name });
 }
 
+export async function updateCategory(id, name) {
+    return putJSON(`categories/${id}`, { name });
+}
+
 export async function deleteCategory(id) {
     return deleteJSON(`categories/${id}`);
 }
@@ -109,4 +113,8 @@ export async function addSubmission(submission) {
 
 export async function markSubmission(id, isCorrect) {
     return putJSON(`submissions/${id}/isCorrect`, isCorrect);
+}
+
+export async function deleteAllSubmissions() {
+    return deleteJSON('submissions');
 }

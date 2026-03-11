@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import StudentPage from './pages/Student/StudentPage';
 import AdminPage from './pages/Admin/AdminPage';
+import logo from './assets/logo.png';
 import './App.css';
 
 function LandingPage() {
@@ -12,9 +13,9 @@ function LandingPage() {
 
       <div className="landing-container">
         <div className="landing-content animate-fade-in-up">
-          <span className="landing-symbol">⟁</span>
+          <img src={logo} className="landing-logo" alt="Logo" />
           <h1 className="landing-title">
-            <span className="text-gradient">CyberQuest</span>
+            <span className="text-gradient">אתגר ענף שיטור דיגיטלי</span>
           </h1>
           <p className="landing-description">
             פלטפורמת אתגרי סייבר ו-OSINT אינטראקטיבית
@@ -37,7 +38,7 @@ function LandingPage() {
               <div className="card-icon-wrap">
                 <span className="card-main-icon">⚙️</span>
               </div>
-              <h2>לוח בקרה</h2>
+              <h2>פורטל מדריך</h2>
               <p>ניהול שאלות, קטגוריות, ציונים ושידור חי</p>
               <span className="card-arrow">←</span>
             </Link>

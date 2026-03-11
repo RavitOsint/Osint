@@ -19,9 +19,13 @@ export function useStudentSync(studentName) {
 
             if (s?.activeCategoryId && loadedCategoryRef.current !== s.activeCategoryId) {
                 const allQs = await getQuestions();
-                const filtered = Object.values(allQs).filter(
-                    (q) => q.categoryIds && q.categoryIds.includes(s.activeCategoryId)
-                );
+                const filtered = Object.values(allQs)
+                    .filter((q) => q.categoryIds && q.categoryIds.includes(s.activeCategoryId))
+                    .sort((a, b) => {
+                        const aOrder = a.categoryOrder && a.categoryOrder[s.activeCategoryId] !== undefined ? a.categoryOrder[s.activeCategoryId] : (a.order || 0);
+                        const bOrder = b.categoryOrder && b.categoryOrder[s.activeCategoryId] !== undefined ? b.categoryOrder[s.activeCategoryId] : (b.order || 0);
+                        return aOrder - bOrder;
+                    });
                 setQuestions(filtered);
                 loadedCategoryRef.current = s.activeCategoryId;
             }
