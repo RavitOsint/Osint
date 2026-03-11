@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import StudentPage from './pages/Student/StudentPage';
 import AdminPage from './pages/Admin/AdminPage';
-import logo from './assets/logo.png';
+
 import './App.css';
 
 function LandingPage() {
@@ -13,7 +13,7 @@ function LandingPage() {
 
       <div className="landing-container">
         <div className="landing-content animate-fade-in-up">
-          <img src={logo} className="landing-logo" alt="Logo" />
+          <img src="/Robot emblem cutout.png" className="landing-logo" alt="Logo" />
           <h1 className="landing-title">
             <span className="text-gradient">אתגר ענף שיטור דיגיטלי</span>
           </h1>

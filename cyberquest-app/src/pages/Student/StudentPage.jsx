@@ -4,7 +4,7 @@ import Button from '../../components/Button/Button';
 import Input from '../../components/Input/Input';
 import { useStudentSync, usePenaltyTimer } from '../../hooks/useStudentSync';
 import { addSubmission } from '../../services/firebase';
-import logo from '../../assets/logo.png';
+
 import './StudentPage.css';
 
 const PHASES = {
@@ -98,7 +98,7 @@ export default function StudentPage() {
                     {phase === PHASES.LOGIN && (
                         <div className="phase-content animate-fade-in-up">
                             <div className="student-logo">
-                                <img src={logo} className="logo-image" alt="Logo" />
+                                <img src="/Robot emblem cutout.png" className="logo-image" alt="Logo" />
                                 <h1 className="text-gradient">אתגר ענף שיטור דיגיטלי</h1>
                                 <p className="student-subtitle">Terminal Access Portal</p>
                             </div>

@@ -8,7 +8,7 @@ import {
     getSubmissions, markSubmission, deleteAllSubmissions,
     updateSettings,
 } from '../../services/firebase';
-import logo from '../../assets/logo.png';
+
 import './AdminPage.css';
 
 const ADMIN_PASSWORD = 'zigi2026';
@@ -418,7 +418,7 @@ export default function AdminPage() {
                 <div className="ambient-orb orb-admin-2" />
                 <div className="admin-login-card animate-scale-in">
                     <div className="login-card-glow" />
-                    <img src={logo} className="admin-login-logo" alt="Logo" />
+                    <img src="/Robot emblem cutout.png" className="admin-login-logo" alt="Logo" />
                     <h1 className="text-gradient">אתגר ענף שיטור דיגיטלי</h1>
                     <p className="admin-login-subtitle">ADMINISTRATION SYSTEM v5.0</p>
                     <form onSubmit={handleLogin} className="admin-login-form">
