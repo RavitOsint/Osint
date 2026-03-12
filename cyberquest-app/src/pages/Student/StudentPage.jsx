@@ -70,6 +70,7 @@ export default function StudentPage() {
             userAnswer: val,
             hasFlag: q.hasFlag,
             isCorrect: q.hasFlag ? isCorrect : null,
+            categoryName: settings?.activeCategoryName || 'ללא קטגוריה',
         });
 
         setAnswer('');

@@ -1027,41 +1027,65 @@ export default function AdminPage() {
                 )}
 
                 {/* ── STUDENT DETAIL ── */}
-                {activeTab === 'grades' && selectedStudent && (
-                    <div className="admin-card animate-fade-in" id="tab-student-detail">
-                        <Button variant="ghost" onClick={() => setSelectedStudent(null)} className="back-btn">
-                            ⬅️ חזרה לרשימה
-                        </Button>
-                        <h3 className="card-title">
-                            <span className="card-title-icon">👤</span>
-                            ציונים עבור: {selectedStudent}
-                        </h3>
+                {activeTab === 'grades' && selectedStudent && (() => {
+                    const studentSubmissions = Object.entries(submissions).filter(([, s]) => s.student === selectedStudent);
+                    
+                    // Group by categoryName
+                    const submissionsByCategory = studentSubmissions.reduce((acc, [id, s]) => {
+                        const cat = s.categoryName || 'קטלוג כללי (ישן)';
+                        if (!acc[cat]) acc[cat] = [];
+                        acc[cat].push([id, s]);
+                        return acc;
+                    }, {});
 
-                        <div className="submissions-list">
-                            {Object.entries(submissions)
-                                .filter(([, s]) => s.student === selectedStudent)
-                                .map(([id, s]) => (
-                                    <div
-                                        key={id}
-                                        className={`submission-card ${s.isCorrect === true ? 'correct' : s.isCorrect === false ? 'incorrect' : 'pending'}`}
-                                    >
-                                        <p className="submission-question">{s.questionText}</p>
-                                        <div className="submission-answer">
-                                            <span className="submission-label">תשובה שנשלחה:</span>
-                                            <span className="submission-value">{s.userAnswer}</span>
-                                        </div>
-                                        <div className="submission-status">
-                                            <span>סטטוס: {s.isCorrect === true ? '✅ נכון' : s.isCorrect === false ? '❌ שגוי' : '⏳ ממתין לבדיקה'}</span>
-                                        </div>
-                                        <div className="submission-actions">
-                                            <Button variant="success" size="sm" onClick={() => handleMarkSubmission(id, true)}>סמן כנכון</Button>
-                                            <Button variant="danger" size="sm" onClick={() => handleMarkSubmission(id, false)}>סמן כשגוי</Button>
+                    return (
+                        <div className="admin-card animate-fade-in" id="tab-student-detail">
+                            <Button variant="ghost" onClick={() => setSelectedStudent(null)} className="back-btn">
+                                ⬅️ חזרה לרשימה
+                            </Button>
+                            <h3 className="card-title">
+                                <span className="card-title-icon">👤</span>
+                                ציונים עבור: {selectedStudent}
+                            </h3>
+
+                            <div className="submissions-list">
+                                {Object.entries(submissionsByCategory).map(([categoryName, subs]) => (
+                                    <div key={categoryName} className="category-group" style={{ marginBottom: '2rem' }}>
+                                        <h4 style={{ 
+                                            marginBottom: '1rem', 
+                                            color: 'var(--accent-primary)',
+                                            borderBottom: '1px solid var(--border-light)',
+                                            paddingBottom: '0.5rem'
+                                        }}>
+                                            📂 קטגוריה: {categoryName}
+                                        </h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            {subs.map(([id, s]) => (
+                                                <div
+                                                    key={id}
+                                                    className={`submission-card ${s.isCorrect === true ? 'correct' : s.isCorrect === false ? 'incorrect' : 'pending'}`}
+                                                >
+                                                    <p className="submission-question">{s.questionText}</p>
+                                                    <div className="submission-answer">
+                                                        <span className="submission-label">תשובה שנשלחה:</span>
+                                                        <span className="submission-value">{s.userAnswer}</span>
+                                                    </div>
+                                                    <div className="submission-status">
+                                                        <span>סטטוס: {s.isCorrect === true ? '✅ נכון' : s.isCorrect === false ? '❌ שגוי' : '⏳ ממתין לבדיקה'}</span>
+                                                    </div>
+                                                    <div className="submission-actions">
+                                                        <Button variant="success" size="sm" onClick={() => handleMarkSubmission(id, true)}>סמן כנכון</Button>
+                                                        <Button variant="danger" size="sm" onClick={() => handleMarkSubmission(id, false)}>סמן כשגוי</Button>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* ── BROADCAST TAB ── */}
                 {activeTab === 'broadcast' && (
