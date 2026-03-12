@@ -367,6 +367,13 @@ export default function AdminPage() {
         return Math.round((correct / studentSubs.length) * 100);
     };
 
+    const calculateStudentGradeByCategory = (name, categoryName) => {
+        const studentSubs = Object.values(submissions).filter(s => s.student === name && (s.categoryName || 'קטלוג כללי (ישן)') === categoryName);
+        if (studentSubs.length === 0) return 0;
+        const correct = studentSubs.filter(s => s.isCorrect === true).length;
+        return Math.round((correct / studentSubs.length) * 100);
+    };
+
     const exportGrades = () => {
         const data = studentNames.map(name => ({
             name,
@@ -979,52 +986,76 @@ export default function AdminPage() {
                 )}
 
                 {/* ── GRADES TAB ── */}
-                {activeTab === 'grades' && !selectedStudent && (
-                    <div className="admin-card animate-fade-in" id="tab-grades">
-                        <h3 className="card-title">
-                            <span className="card-title-icon">📊</span>
-                            מעקב הגשות חניכים
-                            <span className="card-title-badge">{studentNames.length}</span>
-                            <div style={{ marginRight: 'auto', display: 'flex', gap: '10px' }}>
-                                <Button variant="outline" size="sm" onClick={exportGrades} disabled={studentNames.length === 0}>
-                                    📥 ייצוא נתונים
-                                </Button>
-                                <Button variant="danger" size="sm" onClick={handleDeleteAllSubmissions} disabled={studentNames.length === 0}>
-                                    🗑️ נקה הכל
-                                </Button>
-                            </div>
-                        </h3>
+                {activeTab === 'grades' && !selectedStudent && (() => {
+                    // Group submissions by category Name to find all students in each category
+                    const studentsByCategory = Object.values(submissions).reduce((acc, s) => {
+                        const cat = s.categoryName || 'קטלוג כללי (ישן)';
+                        if (!acc[cat]) acc[cat] = new Set();
+                        if (s.student) acc[cat].add(s.student);
+                        return acc;
+                    }, {});
 
-                        <div className="items-list">
-                            {studentNames.map((name, index) => (
-                                <div
-                                    key={name}
-                                    className="list-item clickable animate-slide-in"
-                                    style={{ animationDelay: `${index * 50}ms` }}
-                                    onClick={() => setSelectedStudent(name)}
-                                >
-                                    <div className="item-info">
-                                        <span className="student-avatar">👤</span>
-                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span className="item-text" style={{ fontWeight: 700, fontSize: '1.15rem' }}>{name}</span>
-                                            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: 600 }}>
-                                                ציון: {calculateStudentGrade(name)}%
-                                            </span>
+                    return (
+                        <div className="admin-card animate-fade-in" id="tab-grades">
+                            <h3 className="card-title">
+                                <span className="card-title-icon">📊</span>
+                                מעקב הגשות חניכים
+                                <span className="card-title-badge">{studentNames.length} חניכים רשומים</span>
+                                <div style={{ marginRight: 'auto', display: 'flex', gap: '10px' }}>
+                                    <Button variant="outline" size="sm" onClick={exportGrades} disabled={studentNames.length === 0}>
+                                        📥 ייצוא נתונים
+                                    </Button>
+                                    <Button variant="danger" size="sm" onClick={handleDeleteAllSubmissions} disabled={studentNames.length === 0}>
+                                        🗑️ נקה הכל
+                                    </Button>
+                                </div>
+                            </h3>
+
+                            <div className="items-list">
+                                {Object.entries(studentsByCategory).map(([categoryName, studentSet]) => (
+                                    <div key={categoryName} className="category-group" style={{ marginBottom: '2rem' }}>
+                                        <h4 style={{ 
+                                            marginBottom: '1rem', 
+                                            color: 'var(--accent-primary)',
+                                            borderBottom: '1px solid var(--border-light)',
+                                            paddingBottom: '0.5rem'
+                                        }}>
+                                            📂 קטגוריה: {categoryName}
+                                        </h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            {Array.from(studentSet).map((name, index) => (
+                                                <div
+                                                    key={name}
+                                                    className="list-item clickable animate-slide-in"
+                                                    style={{ animationDelay: `${index * 50}ms` }}
+                                                    onClick={() => setSelectedStudent(name)}
+                                                >
+                                                    <div className="item-info">
+                                                        <span className="student-avatar">👤</span>
+                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                            <span className="item-text" style={{ fontWeight: 700, fontSize: '1.15rem' }}>{name}</span>
+                                                            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: 600 }}>
+                                                                ציון יחסי בקטגוריה: {calculateStudentGradeByCategory(name, categoryName)}%
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <Button variant="success" size="sm">צפה בהגשות</Button>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                    <Button variant="success" size="sm">צפה בהגשות</Button>
-                                </div>
-                            ))}
+                                ))}
 
-                            {studentNames.length === 0 && (
-                                <div className="empty-state">
-                                    <span className="empty-icon">📭</span>
-                                    <p>אין הגשות עדיין</p>
-                                </div>
-                            )}
+                                {studentNames.length === 0 && (
+                                    <div className="empty-state">
+                                        <span className="empty-icon">📭</span>
+                                        <p>אין הגשות עדיין</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* ── STUDENT DETAIL ── */}
                 {activeTab === 'grades' && selectedStudent && (() => {
