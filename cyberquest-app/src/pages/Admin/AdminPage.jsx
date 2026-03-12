@@ -374,23 +374,43 @@ export default function AdminPage() {
         return Math.round((correct / studentSubs.length) * 100);
     };
 
-    const exportGrades = () => {
-        const data = studentNames.map(name => ({
-            name,
-            grade: calculateStudentGrade(name),
-            submissions: Object.values(submissions).filter(s => s.student === name).length
-        }));
+    const exportGrades = (categoryName = null) => {
+        let exportData = [];
 
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Student Name,Grade,Total Submissions\n";
-        data.forEach(row => {
-            csvContent += `${row.name},${row.grade}%,${row.submissions}\n`;
+        if (categoryName) {
+            // Export students for a specific category
+            const studentSubsInCategory = Object.values(submissions)
+                .filter(s => (s.categoryName || 'קטלוג כללי (ישן)') === categoryName && s.student);
+                
+            const studentsInCategory = [...new Set(studentSubsInCategory.map(s => s.student))];
+            
+            exportData = studentsInCategory.map(name => ({
+                name,
+                grade: calculateStudentGradeByCategory(name, categoryName),
+                submissions: studentSubsInCategory.filter(s => s.student === name).length,
+                category: categoryName
+            }));
+        } else {
+            // Export all students globally
+            exportData = studentNames.map(name => ({
+                name,
+                grade: calculateStudentGrade(name),
+                submissions: Object.values(submissions).filter(s => s.student === name).length,
+                category: 'Global'
+            }));
+        }
+
+        let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Hebrew support
+        csvContent += "Student Name,Grade,Total Submissions,Category\n";
+        exportData.forEach(row => {
+            csvContent += `${row.name},${row.grade}%,${row.submissions},${row.category}\n`;
         });
 
-        const encodedUri = encodeURI(csvContent);
+        const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "grades_export.csv");
+        const fileName = categoryName ? `grades_${categoryName}.csv` : "grades_export_all.csv";
+        link.setAttribute("download", fileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1014,14 +1034,21 @@ export default function AdminPage() {
                             <div className="items-list">
                                 {Object.entries(studentsByCategory).map(([categoryName, studentSet]) => (
                                     <div key={categoryName} className="category-group" style={{ marginBottom: '2rem' }}>
-                                        <h4 style={{ 
-                                            marginBottom: '1rem', 
-                                            color: 'var(--accent-primary)',
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: '1rem',
                                             borderBottom: '1px solid var(--border-light)',
                                             paddingBottom: '0.5rem'
                                         }}>
-                                            📂 קטגוריה: {categoryName}
-                                        </h4>
+                                            <h4 style={{ color: 'var(--accent-primary)', margin: 0 }}>
+                                                📂 קטגוריה: {categoryName}
+                                            </h4>
+                                            <Button variant="outline" size="sm" onClick={() => exportGrades(categoryName)}>
+                                                📥 ייצוא קטגוריה זו
+                                            </Button>
+                                        </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                             {Array.from(studentSet).map((name, index) => (
                                                 <div
