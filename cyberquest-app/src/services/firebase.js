@@ -1,120 +1,93 @@
-/**
- * Firebase Realtime Database Service
- * Handles all communication with the Firebase backend
- */
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, get, set, push, remove } from "firebase/database";
 
-const FIREBASE_URL = import.meta.env.VITE_FIREBASE_DB_URL;
+// Configuration loaded from .env variables
+const firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    databaseURL: import.meta.env.VITE_FIREBASE_DB_URL
+};
 
-if (!FIREBASE_URL) {
-    throw new Error(
-        'Missing VITE_FIREBASE_DB_URL in .env file. ' +
-        'Copy .env.example to .env and fill in your Firebase Realtime Database URL.'
-    );
-}
+// Initialize Firebase App
+export const app = initializeApp(firebaseConfig);
 
-// ── Generic Helpers ─────────────────────────────────────────
-
-async function fetchJSON(path) {
-    const res = await fetch(`${FIREBASE_URL}${path}.json`);
-    if (!res.ok) throw new Error(`Firebase fetch failed: ${res.statusText}`);
-    return res.json();
-}
-
-async function putJSON(path, data) {
-    const res = await fetch(`${FIREBASE_URL}${path}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error(`Firebase put failed: ${res.statusText}`);
-    return res.json();
-}
-
-async function postJSON(path, data) {
-    const res = await fetch(`${FIREBASE_URL}${path}.json`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error(`Firebase post failed: ${res.statusText}`);
-    return res.json();
-}
-
-async function deleteJSON(path) {
-    const res = await fetch(`${FIREBASE_URL}${path}.json`, {
-        method: 'DELETE',
-    });
-    if (!res.ok) throw new Error(`Firebase delete failed: ${res.statusText}`);
-    return res.json();
-}
+// Initialize Realtime Database
+export const db = getDatabase(app);
 
 // ── Categories ──────────────────────────────────────────────
 
 export async function getCategories() {
-    const data = await fetchJSON('categories');
-    return data || {};
+    const snap = await get(ref(db, 'categories'));
+    return snap.val() || {};
 }
 
 export async function addCategory(name) {
-    return postJSON('categories', { name });
+    const newRef = push(ref(db, 'categories'));
+    await set(newRef, { name });
 }
 
 export async function updateCategory(id, name) {
-    return putJSON(`categories/${id}`, { name });
+    await set(ref(db, `categories/${id}`), { name });
 }
 
 export async function deleteCategory(id) {
-    return deleteJSON(`categories/${id}`);
+    await remove(ref(db, `categories/${id}`));
 }
 
 // ── Questions ───────────────────────────────────────────────
 
 export async function getQuestions() {
-    const data = await fetchJSON('questions');
-    return data || {};
+    const snap = await get(ref(db, 'questions'));
+    return snap.val() || {};
 }
 
 export async function addQuestion(question) {
-    return postJSON('questions', question);
+    const newRef = push(ref(db, 'questions'));
+    await set(newRef, question);
 }
 
 export async function updateQuestion(id, question) {
-    return putJSON(`questions/${id}`, question);
+    await set(ref(db, `questions/${id}`), question);
 }
 
 export async function deleteQuestion(id) {
-    return deleteJSON(`questions/${id}`);
+    await remove(ref(db, `questions/${id}`));
 }
 
 // ── Settings ────────────────────────────────────────────────
 
 export async function getSettings() {
-    const data = await fetchJSON('settings');
-    return data || {};
+    const snap = await get(ref(db, 'settings'));
+    return snap.val() || {};
 }
 
 export async function updateSettings(settings) {
-    return putJSON('settings', settings);
+    await set(ref(db, 'settings'), settings);
 }
 
 // ── Submissions ─────────────────────────────────────────────
 
 export async function getSubmissions() {
-    const data = await fetchJSON('submissions');
-    return data || {};
+    const snap = await get(ref(db, 'submissions'));
+    return snap.val() || {};
 }
 
 export async function addSubmission(submission) {
-    return postJSON('submissions', {
+    const newRef = push(ref(db, 'submissions'));
+    await set(newRef, {
         ...submission,
         timestamp: new Date().toISOString(),
     });
 }
 
 export async function markSubmission(id, isCorrect) {
-    return putJSON(`submissions/${id}/isCorrect`, isCorrect);
+    await set(ref(db, `submissions/${id}/isCorrect`), isCorrect);
 }
 
 export async function deleteAllSubmissions() {
-    return deleteJSON('submissions');
+    await remove(ref(db, 'submissions'));
 }

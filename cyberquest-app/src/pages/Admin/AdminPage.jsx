@@ -11,7 +11,7 @@ import {
 
 import './AdminPage.css';
 
-const ADMIN_PASSWORD = 'zigi2026';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'zigi2026';
 
 export default function AdminPage() {
     // Auth
