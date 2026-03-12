@@ -6,18 +6,30 @@ import {
     getCategories, addCategory, updateCategory, deleteCategory,
     getQuestions, addQuestion, updateQuestion, deleteQuestion,
     getSubmissions, markSubmission, deleteAllSubmissions,
-    updateSettings,
+    updateSettings, loginAdmin, logoutAdmin, listenToAuthChanges
 } from '../../services/firebase';
 
 import './AdminPage.css';
 
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'zigi2026';
-
 export default function AdminPage() {
     // Auth
     const [isAuthed, setIsAuthed] = useState(false);
+    const [isAuthChecking, setIsAuthChecking] = useState(true);
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [authError, setAuthError] = useState('');
+
+    useEffect(() => {
+        const unsubscribe = listenToAuthChanges((user) => {
+            if (user) {
+                setIsAuthed(true);
+            } else {
+                setIsAuthed(false);
+            }
+            setIsAuthChecking(false);
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Data
     const [categories, setCategories] = useState({});
@@ -52,14 +64,19 @@ export default function AdminPage() {
     const [gameMode, setGameMode] = useState('quiz');
 
     // ── Auth ────────────────────────────────────────────────
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (password === ADMIN_PASSWORD) {
-            setIsAuthed(true);
-            setAuthError('');
-        } else {
-            setAuthError('גישה נדחתה - סיסמה שגויה');
+        setAuthError('');
+        try {
+            await loginAdmin(email, password);
+        } catch (error) {
+            console.error(error);
+            setAuthError('גישה נדחתה - אימייל או סיסמה שגויים');
         }
+    };
+
+    const handleLogout = async () => {
+        await logoutAdmin();
     };
 
     // ── Data fetching ──────────────────────────────────────
@@ -411,6 +428,18 @@ export default function AdminPage() {
     // ══════════════════════════════════════════════════════════
     // LOGIN OVERLAY
     // ══════════════════════════════════════════════════════════
+    if (isAuthChecking) {
+        return (
+            <div className="admin-login-overlay">
+                <div className="ambient-orb orb-admin-1" />
+                <div className="ambient-orb orb-admin-2" />
+                <div className="admin-login-card animate-scale-in" style={{textAlign: 'center', color: 'white'}}>
+                    <h2>טוען טוקן אבטחה...</h2>
+                </div>
+            </div>
+        );
+    }
+
     if (!isAuthed) {
         return (
             <div className="admin-login-overlay">
@@ -420,8 +449,17 @@ export default function AdminPage() {
                     <div className="login-card-glow" />
                     <img src="/Robot emblem cutout.png" className="admin-login-logo" alt="Logo" />
                     <h1 className="text-gradient">אתגר ענף שיטור דיגיטלי</h1>
-                    <p className="admin-login-subtitle">ADMINISTRATION SYSTEM v5.0</p>
+                    <p className="admin-login-subtitle">ADMINISTRATION SYSTEM v5.0 (SECURE)</p>
                     <form onSubmit={handleLogin} className="admin-login-form">
+                        <Input
+                            id="admin-email-input"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="אימייל מדריך"
+                            icon="✉️"
+                            autoFocus
+                        />
                         <Input
                             id="admin-password-input"
                             type="password"
@@ -430,7 +468,6 @@ export default function AdminPage() {
                             placeholder="הכנס סיסמת מנהל"
                             error={authError}
                             icon="🔑"
-                            autoFocus
                         />
                         <Button type="submit" fullWidth size="xl">
                             כניסה למערכת
@@ -446,7 +483,7 @@ export default function AdminPage() {
     // ══════════════════════════════════════════════════════════
     return (
         <div className="admin-layout">
-            <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
+            <Sidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} />
 
             <main className="admin-main">
                 {/* ── ADD QUESTION TAB ── */}

@@ -9,7 +9,7 @@ const NAV_ITEMS = [
     { id: 'broadcast', label: 'שידור חי', icon: '🚀', emoji: true },
 ];
 
-export default function Sidebar({ activeTab, onTabChange }) {
+export default function Sidebar({ activeTab, onTabChange, onLogout }) {
     return (
         <aside className="sidebar" role="navigation" aria-label="Admin navigation">
             <div className="sidebar-header">
@@ -43,6 +43,12 @@ export default function Sidebar({ activeTab, onTabChange }) {
                     <span className="status-dot" />
                     <span>מחובר למערכת</span>
                 </div>
+                {onLogout && (
+                    <button className="sidebar-btn logout-btn" onClick={onLogout} style={{ marginTop: '10px', color: 'var(--error)' }}>
+                        <span className="sidebar-btn-icon">🚪</span>
+                        <span className="sidebar-btn-label">התנתקות</span>
+                    </button>
+                )}
             </div>
         </aside>
     );

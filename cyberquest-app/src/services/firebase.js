@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, set, push, remove } from "firebase/database";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
 // Configuration loaded from .env variables
 const firebaseConfig = {
@@ -17,6 +18,23 @@ export const app = initializeApp(firebaseConfig);
 
 // Initialize Realtime Database
 export const db = getDatabase(app);
+
+// Initialize Auth
+export const auth = getAuth(app);
+
+// ── Auth ────────────────────────────────────────────────────
+
+export function loginAdmin(email, password) {
+    return signInWithEmailAndPassword(auth, email, password);
+}
+
+export function logoutAdmin() {
+    return signOut(auth);
+}
+
+export function listenToAuthChanges(callback) {
+    return onAuthStateChanged(auth, callback);
+}
 
 // ── Categories ──────────────────────────────────────────────
 
