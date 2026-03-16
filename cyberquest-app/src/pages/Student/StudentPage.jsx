@@ -32,9 +32,19 @@ const AnimatedMedia = ({ src }) => {
     if (isVideo) {
         if (!videoPlaying) {
             return (
-                <div style={{ textAlign: 'center', margin: '2rem 0', padding: '2rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>סרטון מצורף</h3>
-                    <Button onClick={() => setVideoPlaying(true)} icon="▶️" size="lg" variant="primary">הפעל אנימציה</Button>
+                <div style={{ textAlign: 'center', margin: '1rem 0', padding: '1rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                        <video
+                            src={src}
+                            className="question-image"
+                            style={{ maxHeight: '300px', width: 'auto', display: 'block', margin: '0 auto', opacity: 0.6 }}
+                            muted
+                            playsInline
+                        />
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                            <Button onClick={() => setVideoPlaying(true)} icon="▶️" size="xl" variant="primary" style={{ boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}>הפעל סרטון</Button>
+                        </div>
+                    </div>
                 </div>
             );
         }
