@@ -33,18 +33,14 @@ const AnimatedMedia = ({ src }) => {
         if (!videoPlaying) {
             return (
                 <div style={{ textAlign: 'center', margin: '1rem 0', padding: '1rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                        <video
-                            src={src}
-                            className="question-image"
-                            style={{ maxHeight: '300px', width: 'auto', display: 'block', margin: '0 auto', opacity: 0.6 }}
-                            muted
-                            playsInline
-                        />
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                            <Button onClick={() => setVideoPlaying(true)} icon="▶️" size="xl" variant="primary" style={{ boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}>הפעל סרטון</Button>
-                        </div>
-                    </div>
+                    <video
+                        src={src}
+                        className="question-image"
+                        style={{ maxHeight: '300px', width: 'auto', display: 'block', margin: '0 auto 1rem auto', opacity: 0.8 }}
+                        muted
+                        playsInline
+                    />
+                    <Button onClick={() => setVideoPlaying(true)} icon="▶️" size="xl" variant="primary">הפעל סרטון</Button>
                 </div>
             );
         }
