@@ -124,8 +124,8 @@ export default function AdminPage() {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) { // 2MB limit for Realtime DB stability
-            alert('התמונה גדולה מדי. אנא העלה תמונה קטנה מ-2MB (לשמירה על ה-Metadata).');
+        if (file.size > 8 * 1024 * 1024) { // 8MB limit
+            alert('הקובץ גדול מדי. אנא העלה קובץ קטן מ-8MB.');
             return;
         }
 
@@ -586,18 +586,22 @@ export default function AdminPage() {
                             <div className="image-upload-wrapper">
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,video/*"
                                     onChange={(e) => handleImageUpload(e, 'new')}
                                     id="new-q-image"
                                     className="file-input-hidden"
                                 />
                                 <label htmlFor="new-q-image" className="file-upload-label">
                                     <span className="upload-icon">🖼️</span>
-                                    {newQ.imageUrl ? 'החלף תמונה' : 'בחר תמונה מהמחשב'}
+                                    {newQ.imageUrl ? 'החלף מדיה' : 'בחר תמונה או סרטון מהמחשב'}
                                 </label>
                                 {newQ.imageUrl && (
                                     <div className="image-preview-container">
-                                        <img src={newQ.imageUrl} alt="Preview" className="image-preview" />
+                                        {newQ.imageUrl.startsWith('data:video') ? (
+                                            <video src={newQ.imageUrl} className="image-preview" controls />
+                                        ) : (
+                                            <img src={newQ.imageUrl} alt="Preview" className="image-preview" />
+                                        )}
                                         <div className="image-actions-overlay">
                                             <Button
                                                 variant="outline"
@@ -605,7 +609,7 @@ export default function AdminPage() {
                                                 onClick={() => {
                                                     const link = document.createElement('a');
                                                     link.href = newQ.imageUrl;
-                                                    link.download = `challenge_image_${Date.now()}`;
+                                                    link.download = `challenge_media_${Date.now()}`;
                                                     link.click();
                                                 }}
                                             >
@@ -617,7 +621,7 @@ export default function AdminPage() {
                                                 onClick={() => setNewQ(p => ({ ...p, imageUrl: '' }))}
                                                 className="remove-img-btn"
                                             >
-                                                מחק תמונה
+                                                מחק מדיה
                                             </Button>
                                         </div>
                                     </div>
@@ -775,18 +779,22 @@ export default function AdminPage() {
                             <div className="image-upload-wrapper">
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,video/*"
                                     onChange={(e) => handleImageUpload(e, 'edit')}
                                     id="edit-q-image"
                                     className="file-input-hidden"
                                 />
                                 <label htmlFor="edit-q-image" className="file-upload-label">
                                     <span className="upload-icon">🖼️</span>
-                                    {editQ.imageUrl ? 'החלף תמונה' : 'בחר תמונה מהמחשב'}
+                                    {editQ.imageUrl ? 'החלף מדיה' : 'בחר תמונה או סרטון מהמחשב'}
                                 </label>
                                 {editQ.imageUrl && (
                                     <div className="image-preview-container">
-                                        <img src={editQ.imageUrl} alt="Preview" className="image-preview" />
+                                        {editQ.imageUrl.startsWith('data:video') ? (
+                                            <video src={editQ.imageUrl} className="image-preview" controls />
+                                        ) : (
+                                            <img src={editQ.imageUrl} alt="Preview" className="image-preview" />
+                                        )}
                                         <div className="image-actions-overlay">
                                             <Button
                                                 variant="outline"
@@ -794,7 +802,7 @@ export default function AdminPage() {
                                                 onClick={() => {
                                                     const link = document.createElement('a');
                                                     link.href = editQ.imageUrl;
-                                                    link.download = `edit_image_${Date.now()}`;
+                                                    link.download = `edit_media_${Date.now()}`;
                                                     link.click();
                                                 }}
                                             >
@@ -806,7 +814,7 @@ export default function AdminPage() {
                                                 onClick={() => setEditQ(p => ({ ...p, imageUrl: '' }))}
                                                 className="remove-img-btn"
                                             >
-                                                מחק תמונה
+                                                מחק מדיה
                                             </Button>
                                         </div>
                                     </div>

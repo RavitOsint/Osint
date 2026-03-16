@@ -25,6 +25,39 @@ const renderTextWithBold = (text) => {
     });
 };
 
+const AnimatedMedia = ({ src }) => {
+    const [videoPlaying, setVideoPlaying] = useState(false);
+    const isVideo = src.startsWith('data:video');
+
+    if (isVideo) {
+        if (!videoPlaying) {
+            return (
+                <div style={{ textAlign: 'center', margin: '2rem 0', padding: '2rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px' }}>
+                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>סרטון מצורף</h3>
+                    <Button onClick={() => setVideoPlaying(true)} icon="▶️" size="lg" variant="primary">הפעל אנימציה</Button>
+                </div>
+            );
+        }
+        return (
+            <video
+                src={src}
+                className="question-image"
+                controls
+                autoPlay
+                style={{ maxHeight: '400px', width: 'auto', display: 'block', margin: '0 auto' }}
+            />
+        );
+    }
+
+    return (
+        <img
+            src={src}
+            alt="Challenge"
+            className="question-image"
+        />
+    );
+};
+
 export default function StudentPage() {
     const [studentName, setStudentName] = useState('');
     const [loggedInName, setLoggedInName] = useState('');
@@ -163,11 +196,7 @@ export default function StudentPage() {
                                 {currentQuestion.imageUrl && (
                                     <>
                                         <div className="question-image-container animate-fade-in">
-                                            <img
-                                                src={currentQuestion.imageUrl}
-                                                alt="Challenge"
-                                                className="question-image"
-                                            />
+                                            <AnimatedMedia src={currentQuestion.imageUrl} />
                                         </div>
                                         <div className="img-download-area">
                                             <Button
