@@ -71,6 +71,7 @@ export default function StudentPage() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answer, setAnswer] = useState('');
     const [feedback, setFeedback] = useState('');
+    const [score, setScore] = useState(0);
 
     const { settings, questions } = useStudentSync(loggedInName);
     const { isLocked, timeLeft, startPenalty } = usePenaltyTimer(10);
@@ -100,6 +101,10 @@ export default function StudentPage() {
             setFeedback('⚠️ זוהתה תשובה שגויה! נועל מערכת...');
             startPenalty();
             return;
+        }
+
+        if (isCorrect) {
+            setScore(prev => prev + 1);
         }
 
         // Save submission
@@ -297,6 +302,18 @@ export default function StudentPage() {
                                 MISSION COMPLETE
                             </h2>
                             <p className="complete-text">כל הנתונים הועלו בהצלחה לשרת המרכזי.</p>
+
+                            {settings?.gameMode === 'quiz' && questions.length > 0 && questions.every(q => q.type === 'multiple') && (
+                                <div className="score-display" style={{ margin: '2rem 0', padding: '1.5rem', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                                    <h3 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', color: 'var(--accent-primary)', textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>
+                                        הציון שלך: {Math.round((score / questions.length) * 100)}
+                                    </h3>
+                                    <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
+                                        ענית נכונה על {score} מתוך {questions.length} שאלות
+                                    </p>
+                                </div>
+                            )}
+
                             <Button
                                 onClick={() => window.location.reload()}
                                 variant="secondary"
