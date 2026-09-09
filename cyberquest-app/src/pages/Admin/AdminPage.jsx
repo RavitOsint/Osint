@@ -10,6 +10,7 @@ import {
 } from '../../services/firebase';
 
 import './AdminPage.css';
+import { exportCategoriesToExcel } from '../../utils/excelExporter';
 
 export default function AdminPage() {
     // Auth
@@ -101,15 +102,23 @@ export default function AdminPage() {
             });
 
             setQuestions(validQs);
-            if (!broadcastCatId && Object.keys(cats).length > 0) {
-                setBroadcastCatId(Object.keys(cats)[0]);
-            }
+            setBroadcastCatId(prev => {
+                const catIds = Object.keys(cats || {});
+                if (catIds.length > 0) {
+                    if (!prev || !catIds.includes(prev)) {
+                        return catIds[0];
+                    }
+                } else {
+                    return '';
+                }
+                return prev;
+            });
         } catch (err) {
             console.error('Failed to refresh data:', err);
         } finally {
             setLoading(false);
         }
-    }, [broadcastCatId]);
+    }, []);
 
     useEffect(() => {
         if (isAuthed) refreshData();
@@ -897,6 +906,16 @@ export default function AdminPage() {
                             <span className="card-title-icon">📂</span>
                             ניהול קטגוריות
                             <span className="card-title-badge">{Object.keys(categories).length}</span>
+                            <div style={{ marginRight: 'auto', display: 'flex', gap: '10px' }}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => exportCategoriesToExcel(categories, questions)}
+                                    disabled={Object.keys(categories).length === 0 && Object.keys(questions).length === 0}
+                                >
+                                    📊 ייצוא הכל לאקסל
+                                </Button>
+                            </div>
                         </h3>
 
                         <div className="items-list">
@@ -907,6 +926,14 @@ export default function AdminPage() {
                                         <span className="item-text" style={{ fontWeight: 700, fontSize: '1.15rem' }}>{cat.name}</span>
                                     </div>
                                     <div className="item-actions">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => exportCategoriesToExcel(categories, questions, id)}
+                                            title="ייצוא שאלות ותשובות לקטגוריה זו לאקסל"
+                                        >
+                                            📊 ייצוא לאקסל
+                                        </Button>
                                         <Button variant="outline" size="sm" onClick={() => {
                                             setViewCatId(id);
                                             setEditCatNameState(cat.name || '');
@@ -942,6 +969,15 @@ export default function AdminPage() {
                         <h3 className="card-title">
                             <span className="card-title-icon">📂</span>
                             עריכת קטגוריה: {categories[viewCatId]?.name}
+                            <div style={{ marginRight: 'auto' }}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => exportCategoriesToExcel(categories, questions, viewCatId)}
+                                >
+                                    📊 ייצוא קטגוריה זו לאקסל
+                                </Button>
+                            </div>
                         </h3>
 
                         <div className="form-section">
