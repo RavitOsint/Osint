@@ -11,6 +11,7 @@ import {
 
 import './AdminPage.css';
 import { exportCategoriesToExcel } from '../../utils/excelExporter';
+import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
 
 export default function AdminPage() {
     // Auth
@@ -482,17 +483,21 @@ export default function AdminPage() {
                 <div className="ambient-orb orb-admin-1" />
                 <div className="ambient-orb orb-admin-2" />
                 <div className="admin-login-card animate-scale-in">
+                    <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 10 }}>
+                        <ThemeToggle size="small" />
+                    </div>
                     <div className="login-card-glow" />
                     <img src="/Robot emblem cutout.png" className="admin-login-logo" alt="Logo" />
                     <h1 className="text-gradient">אתגר ענף שיטור דיגיטלי</h1>
-                    <p className="admin-login-subtitle">ADMINISTRATION SYSTEM v5.0 (SECURE)</p>
+                    <p className="admin-login-subtitle">ISRAEL POLICE // COMMAND & ADMIN v5.0</p>
                     <form onSubmit={handleLogin} className="admin-login-form">
                         <Input
                             id="admin-email-input"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="אימייל מדריך"
+                            placeholder="אימייל מדריך / מפקד"
+                            label="אימייל מורשה"
                             icon="✉️"
                             autoFocus
                         />
@@ -502,6 +507,7 @@ export default function AdminPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="הכנס סיסמת מנהל"
+                            label="סיסמת גישה"
                             error={authError}
                             icon="🔑"
                         />
@@ -522,6 +528,19 @@ export default function AdminPage() {
             <Sidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} />
 
             <main className="admin-main">
+                <div className="admin-topbar">
+                    <div className="admin-topbar-title">
+                        <span className="police-topbar-badge">🛡️</span>
+                        <div>
+                            <span className="police-topbar-name">משטרת ישראל | מרכז שליטה ובקרה</span>
+                            <span className="police-topbar-unit">ענף שיטור דיגיטלי — ניהול אתגרים וסימולציות סייבר</span>
+                        </div>
+                    </div>
+                    <div className="admin-topbar-actions">
+                        <ThemeToggle size="medium" />
+                    </div>
+                </div>
+
                 {/* ── ADD QUESTION TAB ── */}
                 {activeTab === 'add-question' && (
                     <div className="admin-card animate-fade-in" id="tab-add-question">

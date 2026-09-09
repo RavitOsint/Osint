@@ -216,6 +216,8 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-subtle);
+    text-align: center;
+    direction: rtl;
 }
 
 .question-title {
@@ -231,11 +233,13 @@
 }
 
 .question-text {
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 1.25rem;
     line-height: 1.8;
     color: var(--text-primary);
     white-space: pre-wrap;
+    text-align: center;
+    direction: rtl;
 }
 
 .question-text strong {
