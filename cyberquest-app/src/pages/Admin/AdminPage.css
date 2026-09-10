@@ -518,6 +518,31 @@
     border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
+.tag-hidden {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    font-weight: 700;
+}
+
+.tag-active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    font-weight: 700;
+}
+
+.list-item.is-hidden {
+    opacity: 0.7;
+    background: rgba(239, 68, 68, 0.03);
+    border: 1px dashed rgba(239, 68, 68, 0.35);
+}
+
+.list-item.is-hidden:hover {
+    opacity: 0.95;
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
 .item-actions {
     display: flex;
     gap: var(--space-sm);

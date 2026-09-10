@@ -40,9 +40,14 @@ export const exportCategoriesToExcel = (categories = {}, questions = {}, targetC
                     ? q.options.filter(o => o && o.trim()).map((opt, i) => `${i + 1}) ${opt}`).join(' | ')
                     : '—';
 
+                const isHiddenInThisCat = (Array.isArray(q.hiddenCategories) && q.hiddenCategories.includes(targetCatId)) ||
+                    (q.hiddenCategories && typeof q.hiddenCategories === 'object' && q.hiddenCategories[targetCatId] === true) ||
+                    q.hidden === true;
+
                 return {
                     'מספר שאלה': index + 1,
                     'שם הקטגוריה': catName,
+                    'סטטוס בקטגוריה': isHiddenInThisCat ? 'מוסתרת מהחניך' : 'פעילה',
                     'כותרת השאלה': q.title || 'ללא כותרת',
                     'תוכן השאלה': q.text || '',
                     'סוג השאלה': getQuestionTypeLabel(q.type),
@@ -104,9 +109,14 @@ export const exportCategoriesToExcel = (categories = {}, questions = {}, targetC
                     ? q.options.filter(o => o && o.trim()).map((opt, i) => `${i + 1}) ${opt}`).join(' | ')
                     : '—';
 
+                const isHiddenInThisCat = (Array.isArray(q.hiddenCategories) && q.hiddenCategories.includes(catId)) ||
+                    (q.hiddenCategories && typeof q.hiddenCategories === 'object' && q.hiddenCategories[catId] === true) ||
+                    q.hidden === true;
+
                 allRows.push({
                     'שם הקטגוריה': cat.name,
                     'מספר שאלה בקטגוריה': index + 1,
+                    'סטטוס בקטגוריה': isHiddenInThisCat ? 'מוסתרת מהחניך' : 'פעילה',
                     'כותרת השאלה': q.title || 'ללא כותרת',
                     'תוכן השאלה': q.text || '',
                     'סוג השאלה': getQuestionTypeLabel(q.type),
@@ -129,6 +139,7 @@ export const exportCategoriesToExcel = (categories = {}, questions = {}, targetC
                 allRows.push({
                     'שם הקטגוריה': 'ללא קטגוריה',
                     'מספר שאלה בקטגוריה': index + 1,
+                    'סטטוס בקטגוריה': q.hidden ? 'מוסתרת מהחניך' : 'פעילה',
                     'כותרת השאלה': q.title || 'ללא כותרת',
                     'תוכן השאלה': q.text || '',
                     'סוג השאלה': getQuestionTypeLabel(q.type),
@@ -182,8 +193,13 @@ export const exportCategoriesToExcel = (categories = {}, questions = {}, targetC
                         ? q.options.filter(o => o && o.trim()).map((opt, i) => `${i + 1}) ${opt}`).join(' | ')
                         : '—';
 
+                    const isHiddenInThisCat = (Array.isArray(q.hiddenCategories) && q.hiddenCategories.includes(catId)) ||
+                        (q.hiddenCategories && typeof q.hiddenCategories === 'object' && q.hiddenCategories[catId] === true) ||
+                        q.hidden === true;
+
                     return {
                         'מספר שאלה': index + 1,
+                        'סטטוס בקטגוריה': isHiddenInThisCat ? 'מוסתרת מהחניך' : 'פעילה',
                         'כותרת השאלה': q.title || 'ללא כותרת',
                         'תוכן השאלה': q.text || '',
                         'סוג השאלה': getQuestionTypeLabel(q.type),

@@ -69,6 +69,16 @@ export default function AdminPage() {
     const handleLogin = async (e) => {
         e.preventDefault();
         setAuthError('');
+
+        const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'zigi2026';
+
+        // 1. Direct password check (environment master password)
+        if (password === adminPassword) {
+            setIsAuthed(true);
+            return;
+        }
+
+        // 2. Firebase Authentication
         try {
             await loginAdmin(email, password);
         } catch (error) {
@@ -206,11 +216,14 @@ export default function AdminPage() {
             categoryIds: q.categoryIds || [],
             options: q.options || ['', '', ''],
             correctOptionIndex: q.options ? q.options.indexOf(q.answer) : 0,
+            hidden: Boolean(q.hidden),
+            hiddenCategories: q.hiddenCategories || [],
         });
         setActiveTab('edit-question');
     };
     const handleUpdateQuestion = async () => {
         const updated = {
+            ...editQ,
             title: editQ.title || '',
             text: editQ.text,
             type: editQ.type,
@@ -219,7 +232,9 @@ export default function AdminPage() {
             imageUrl: editQ.imageUrl || '',
             order: editQ.order !== undefined ? editQ.order : 0,
             answer: editQ.type === 'explanation' ? '' : (editQ.hasFlag ? (editQ.type === 'multiple' ? editQ.options[editQ.correctOptionIndex] : editQ.answer) : ''),
-            options: editQ.type === 'multiple' ? editQ.options.filter(o => o.trim()) : null
+            options: editQ.type === 'multiple' ? editQ.options.filter(o => o.trim()) : null,
+            hidden: Boolean(editQ.hidden),
+            hiddenCategories: editQ.hiddenCategories || [],
         };
         await updateQuestion(editId, updated);
         await refreshData();
@@ -334,8 +349,84 @@ export default function AdminPage() {
         if (window.confirm('האם להסיר את השאלה מקטגוריה זו?')) {
             const q = questions[questionId];
             const updatedIds = (q.categoryIds || []).filter(id => id !== catId);
-            await updateQuestion(questionId, { ...q, categoryIds: updatedIds });
+            const updatedHidden = Array.isArray(q.hiddenCategories)
+                ? q.hiddenCategories.filter(id => id !== catId)
+                : [];
+            await updateQuestion(questionId, { ...q, categoryIds: updatedIds, hiddenCategories: updatedHidden });
             await refreshData();
+        }
+    };
+
+    const handleToggleHideQuestionInCategory = async (questionId, catId) => {
+        const q = questions[questionId];
+        if (!q) return;
+
+        let currentHidden = [];
+        if (Array.isArray(q.hiddenCategories)) {
+            currentHidden = [...q.hiddenCategories];
+        } else if (q.hiddenCategories && typeof q.hiddenCategories === 'object') {
+            currentHidden = Object.keys(q.hiddenCategories).filter(k => q.hiddenCategories[k]);
+        }
+
+        const isCurrentlyHidden = currentHidden.includes(catId);
+        const updatedHidden = isCurrentlyHidden
+            ? currentHidden.filter(id => id !== catId)
+            : [...currentHidden, catId];
+
+        const updatedQ = {
+            ...q,
+            hiddenCategories: updatedHidden,
+        };
+
+        // Optimistic UI update
+        setQuestions(prev => ({
+            ...prev,
+            [questionId]: updatedQ,
+        }));
+
+        try {
+            await updateQuestion(questionId, updatedQ);
+            // If this category is currently active, update settings broadcast timestamp so connected students update
+            const currentSettings = await getSettings();
+            if (currentSettings?.activeCategoryId === catId) {
+                await updateSettings({
+                    ...currentSettings,
+                    broadcastTimestamp: Date.now(),
+                });
+            }
+        } catch (err) {
+            console.error('Failed to toggle question hidden state in category:', err);
+            refreshData();
+        }
+    };
+
+    const handleToggleHideQuestionGlobal = async (questionId) => {
+        const q = questions[questionId];
+        if (!q) return;
+
+        const isHidden = !q.hidden;
+        const updatedQ = {
+            ...q,
+            hidden: isHidden,
+        };
+
+        setQuestions(prev => ({
+            ...prev,
+            [questionId]: updatedQ,
+        }));
+
+        try {
+            await updateQuestion(questionId, updatedQ);
+            const currentSettings = await getSettings();
+            if (currentSettings?.activeCategoryId && (q.categoryIds || []).includes(currentSettings.activeCategoryId)) {
+                await updateSettings({
+                    ...currentSettings,
+                    broadcastTimestamp: Date.now(),
+                });
+            }
+        } catch (err) {
+            console.error('Failed to toggle global question hidden state:', err);
+            refreshData();
         }
     };
 
@@ -433,6 +524,7 @@ export default function AdminPage() {
             gameMode,
             activeCategoryId: broadcastCatId,
             activeCategoryName: categories[broadcastCatId]?.name || '',
+            broadcastTimestamp: Date.now(),
         });
         alert('השידור הופעל! החניכים יכולים להתחיל.');
     };
@@ -493,11 +585,11 @@ export default function AdminPage() {
                     <form onSubmit={handleLogin} className="admin-login-form">
                         <Input
                             id="admin-email-input"
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="אימייל מדריך / מפקד"
-                            label="אימייל מורשה"
+                            placeholder="אימייל מדריך / שם משתמש (למשל: admin)"
+                            label="אימייל או שם משתמש"
                             icon="✉️"
                             autoFocus
                         />
@@ -723,7 +815,7 @@ export default function AdminPage() {
                             {Object.entries(questions)
                                 .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
                                 .map(([id, q], index) => (
-                                    <div key={id} className="list-item animate-slide-in" style={{ animationDelay: `${index * 50}ms` }}>
+                                    <div key={id} className={`list-item animate-slide-in ${q.hidden ? 'is-hidden' : ''}`} style={{ animationDelay: `${index * 50}ms` }}>
                                         <div className="item-info">
                                             <span className="item-number">{index + 1}</span>
                                             <div className="item-details">
@@ -732,6 +824,19 @@ export default function AdminPage() {
                                                 <div className="item-meta">
                                                     <span className="tag tag-type">{q.type === 'multiple' ? 'אמריקאית' : q.type === 'explanation' ? 'הסבר' : 'פתוחה'}</span>
                                                     {q.hasFlag && <span className="tag tag-flag">🚩 Flag</span>}
+                                                    {q.hidden && <span className="tag tag-hidden">🚫 מוסתרת גלובלית</span>}
+                                                    {(() => {
+                                                        const hiddenInCats = (Array.isArray(q.hiddenCategories) ? q.hiddenCategories : Object.keys(q.hiddenCategories || {})).filter(catId => categories[catId]);
+                                                        if (hiddenInCats.length > 0) {
+                                                            const catNames = hiddenInCats.map(cId => categories[cId]?.name).filter(Boolean).join(', ');
+                                                            return (
+                                                                <span className="tag tag-hidden" title={`מוסתרת בקטגוריות: ${catNames}`}>
+                                                                    🙈 מוסתרת ב-{hiddenInCats.length} קטגוריות
+                                                                </span>
+                                                            );
+                                                        }
+                                                        return null;
+                                                    })()}
                                                     {q.categoryIds && q.categoryIds.map(catId => (
                                                         <span key={catId} className="tag tag-category">
                                                             📂 {categories[catId]?.name || 'קטגוריה הוסרה'}
@@ -741,6 +846,14 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                         <div className="item-actions">
+                                            <Button
+                                                variant={q.hidden ? "success" : "outline"}
+                                                size="sm"
+                                                onClick={() => handleToggleHideQuestionGlobal(id)}
+                                                title={q.hidden ? "שאלה זו מוסתרת גלובלית - לחץ כדי להציג" : "הסתר שאלה זו גלובלית מכל הקטגוריות"}
+                                            >
+                                                {q.hidden ? "👁️ הצג גלובלית" : "🙈 הסתר גלובלית"}
+                                            </Button>
                                             <Button variant="ghost" size="sm" onClick={() => handleMoveQuestion(id, 'up')} title="הזז למעלה">⬆️</Button>
                                             <Button variant="ghost" size="sm" onClick={() => handleMoveQuestion(id, 'down')} title="הזז למטה">⬇️</Button>
                                             <Button variant="outline" size="sm" onClick={() => openEditQuestion(id)}>עריכה</Button>
@@ -912,6 +1025,18 @@ export default function AdminPage() {
                             </>
                         )}
 
+                        <div className="checkbox-field" style={{ marginTop: '16px' }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(editQ.hidden)}
+                                    onChange={(e) => setEditQ((p) => ({ ...p, hidden: e.target.checked }))}
+                                />
+                                <span className="checkmark" />
+                                <span>הסתר שאלה זו גלובלית (לא תוצג לחניכים באף קטגוריה)</span>
+                            </label>
+                        </div>
+
                         <Button onClick={handleUpdateQuestion} variant="success" fullWidth size="xl" className="mt-xl">
                             עדכן נתונים
                         </Button>
@@ -1043,27 +1168,60 @@ export default function AdminPage() {
                                     const bOrder = b[1].categoryOrder && b[1].categoryOrder[viewCatId] !== undefined ? b[1].categoryOrder[viewCatId] : (b[1].order || 0);
                                     return aOrder - bOrder;
                                 })
-                                .map(([id, q], i) => (
-                                    <div key={id} className="list-item">
-                                        <div className="item-info">
-                                            <span className="item-number">{i + 1}</span>
-                                            <div className="item-details">
-                                                <span className="item-text" style={{ fontWeight: 800, color: 'var(--accent-primary)' }}>{q.title || 'ללא כותרת'}</span>
-                                                <span className="item-text">{q.text}</span>
-                                                <span className="answer-badge" style={{ marginTop: '4px', alignSelf: 'start' }}>
-                                                    תשובה: {q.answer || '—'}
-                                                </span>
+                                .map(([id, q], i) => {
+                                    const isHiddenInThisCat = (Array.isArray(q.hiddenCategories) && q.hiddenCategories.includes(viewCatId)) ||
+                                        (q.hiddenCategories && typeof q.hiddenCategories === 'object' && q.hiddenCategories[viewCatId] === true);
+                                    const isHiddenGlobally = Boolean(q.hidden);
+
+                                    return (
+                                        <div key={id} className={`list-item ${isHiddenInThisCat || isHiddenGlobally ? 'is-hidden' : ''}`}>
+                                            <div className="item-info">
+                                                <span className="item-number">{i + 1}</span>
+                                                <div className="item-details">
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                        <span className="item-text" style={{ fontWeight: 800, color: 'var(--accent-primary)' }}>
+                                                            {q.title || 'ללא כותרת'}
+                                                        </span>
+                                                        {isHiddenInThisCat && (
+                                                            <span className="tag tag-hidden">🙈 מוסתרת מהחניך בקטגוריה זו</span>
+                                                        )}
+                                                        {isHiddenGlobally && (
+                                                            <span className="tag tag-hidden">🚫 מוסתרת גלובלית</span>
+                                                        )}
+                                                        {!isHiddenInThisCat && !isHiddenGlobally && (
+                                                            <span className="tag tag-active">👁️ פעילה לחניך</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="item-text">{q.text}</span>
+                                                    <span className="answer-badge" style={{ marginTop: '4px', alignSelf: 'start' }}>
+                                                        תשובה: {q.answer || '—'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="item-actions">
+                                                <Button
+                                                    variant={isHiddenInThisCat ? "success" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => handleToggleHideQuestionInCategory(id, viewCatId)}
+                                                    title={isHiddenInThisCat ? "בטל הסתרה והצג שאלה זו לחניך בקטגוריה זו" : "הסתר שאלה זו מהחניך בקטגוריה זו (מבלי למחוק)"}
+                                                >
+                                                    {isHiddenInThisCat ? "👁️ הצג שאלה" : "🙈 הסתר שאלה"}
+                                                </Button>
+                                                <Button variant="ghost" size="sm" onClick={() => handleMoveQuestionInCategory(id, 'up', viewCatId)} title="הזז למעלה">⬆️</Button>
+                                                <Button variant="ghost" size="sm" onClick={() => handleMoveQuestionInCategory(id, 'down', viewCatId)} title="הזז למטה">⬇️</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleRemoveFromCategory(id, viewCatId)}>
+                                                    הסר מהקטגוריה
+                                                </Button>
                                             </div>
                                         </div>
-                                        <div className="item-actions">
-                                            <Button variant="ghost" size="sm" onClick={() => handleMoveQuestionInCategory(id, 'up', viewCatId)} title="הזז למעלה">⬆️</Button>
-                                            <Button variant="ghost" size="sm" onClick={() => handleMoveQuestionInCategory(id, 'down', viewCatId)} title="הזז למטה">⬇️</Button>
-                                            <Button variant="danger" size="sm" onClick={() => handleRemoveFromCategory(id, viewCatId)}>
-                                                הסר מהקטגוריה
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
+
+                            {Object.entries(questions).filter(([, q]) => (q.categoryIds || []).includes(viewCatId)).length === 0 && (
+                                <div className="empty-state" style={{ padding: '2rem 1rem' }}>
+                                    <p>אין שאלות משויכות לקטגוריה זו עדיין. בחר שאלה מהתפריט למעלה ולחץ "הוסף שיוך".</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

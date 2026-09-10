@@ -10,6 +10,7 @@ export function useStudentSync(studentName) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const loadedCategoryRef = useRef(null);
+    const loadedBroadcastRef = useRef(null);
 
     const sync = useCallback(async () => {
         if (!studentName) return;
@@ -17,10 +18,25 @@ export function useStudentSync(studentName) {
             const s = await getSettings();
             setSettings(s);
 
-            if (s?.activeCategoryId && loadedCategoryRef.current !== s.activeCategoryId) {
+            const catChanged = s?.activeCategoryId && loadedCategoryRef.current !== s.activeCategoryId;
+            const broadcastChanged = s?.broadcastTimestamp && loadedBroadcastRef.current !== s.broadcastTimestamp;
+
+            if (s?.activeCategoryId && (catChanged || broadcastChanged || loadedCategoryRef.current === null)) {
                 const allQs = await getQuestions();
                 const filtered = Object.values(allQs)
-                    .filter((q) => q.categoryIds && q.categoryIds.includes(s.activeCategoryId))
+                    .filter((q) => {
+                        if (!q.categoryIds || !q.categoryIds.includes(s.activeCategoryId)) return false;
+
+                        // Check if hidden in this specific category
+                        const isHiddenInCat = (Array.isArray(q.hiddenCategories) && q.hiddenCategories.includes(s.activeCategoryId)) ||
+                            (q.hiddenCategories && typeof q.hiddenCategories === 'object' && q.hiddenCategories[s.activeCategoryId] === true) ||
+                            (q.hiddenCategoryMap && q.hiddenCategoryMap[s.activeCategoryId] === true);
+
+                        // Check if hidden globally
+                        const isHiddenGlobally = q.hidden === true || q.isHidden === true;
+
+                        return !isHiddenInCat && !isHiddenGlobally;
+                    })
                     .sort((a, b) => {
                         const aOrder = a.categoryOrder && a.categoryOrder[s.activeCategoryId] !== undefined ? a.categoryOrder[s.activeCategoryId] : (a.order || 0);
                         const bOrder = b.categoryOrder && b.categoryOrder[s.activeCategoryId] !== undefined ? b.categoryOrder[s.activeCategoryId] : (b.order || 0);
@@ -28,6 +44,7 @@ export function useStudentSync(studentName) {
                     });
                 setQuestions(filtered);
                 loadedCategoryRef.current = s.activeCategoryId;
+                loadedBroadcastRef.current = s.broadcastTimestamp || null;
             }
             setError(null);
         } catch (e) {
