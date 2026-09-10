@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Box, Checkbox, FormControlLabel, Typography } from '@mui/material';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Button from '../../components/Button/Button';
 import Input, { Textarea, Select } from '../../components/Input/Input';
@@ -17,16 +18,47 @@ export default function AdminPage() {
     // Auth
     const [isAuthed, setIsAuthed] = useState(false);
     const [isAuthChecking, setIsAuthChecking] = useState(true);
-    const [email, setEmail] = useState('');
+    const [rememberMe, setRememberMe] = useState(() => {
+        try {
+            return localStorage.getItem('cyberquest_admin_remember') === 'true';
+        } catch {
+            return true;
+        }
+    });
+    const [email, setEmail] = useState(() => {
+        try {
+            return localStorage.getItem('cyberquest_admin_saved_user') || '';
+        } catch {
+            return '';
+        }
+    });
     const [password, setPassword] = useState('');
     const [authError, setAuthError] = useState('');
 
     useEffect(() => {
+        try {
+            const isRemembered = localStorage.getItem('cyberquest_admin_remember') === 'true';
+            if (isRemembered) {
+                setIsAuthed(true);
+                setIsAuthChecking(false);
+                return;
+            }
+        } catch (e) {
+            console.error('Failed to check remembered auth:', e);
+        }
+
         const unsubscribe = listenToAuthChanges((user) => {
             if (user) {
                 setIsAuthed(true);
             } else {
-                setIsAuthed(false);
+                try {
+                    const isRemembered = localStorage.getItem('cyberquest_admin_remember') === 'true';
+                    if (!isRemembered) {
+                        setIsAuthed(false);
+                    }
+                } catch {
+                    setIsAuthed(false);
+                }
             }
             setIsAuthChecking(false);
         });
@@ -72,8 +104,23 @@ export default function AdminPage() {
 
         const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'zigi2026';
 
+        const saveRememberState = () => {
+            try {
+                if (rememberMe) {
+                    localStorage.setItem('cyberquest_admin_remember', 'true');
+                    if (email) localStorage.setItem('cyberquest_admin_saved_user', email);
+                } else {
+                    localStorage.removeItem('cyberquest_admin_remember');
+                    localStorage.removeItem('cyberquest_admin_saved_user');
+                }
+            } catch (err) {
+                console.error('Error saving remember state:', err);
+            }
+        };
+
         // 1. Direct password check (environment master password)
         if (password === adminPassword) {
+            saveRememberState();
             setIsAuthed(true);
             return;
         }
@@ -81,13 +128,20 @@ export default function AdminPage() {
         // 2. Firebase Authentication
         try {
             await loginAdmin(email, password);
+            saveRememberState();
         } catch (error) {
             console.error(error);
-            setAuthError('גישה נדחתה - אימייל או סיסמה שגויים');
+            setAuthError('גישה נדחתה - שם משתמש / דוא"ל או סיסמה שגויים');
         }
     };
 
     const handleLogout = async () => {
+        try {
+            localStorage.removeItem('cyberquest_admin_remember');
+        } catch (e) {
+            console.error('Error clearing remember state:', e);
+        }
+        setIsAuthed(false);
         await logoutAdmin();
     };
 
@@ -588,9 +642,9 @@ export default function AdminPage() {
                             type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="אימייל מדריך / שם משתמש (למשל: admin)"
-                            label="אימייל או שם משתמש"
-                            icon="✉️"
+                            placeholder='שם משתמש או דוא"ל'
+                            label='שם משתמש או דוא"ל'
+                            icon="👤"
                             autoFocus
                         />
                         <Input
@@ -603,6 +657,30 @@ export default function AdminPage() {
                             error={authError}
                             icon="🔑"
                         />
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', mb: 2, direction: 'rtl' }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        color="primary"
+                                        size="small"
+                                        sx={{
+                                            color: 'primary.main',
+                                            '&.Mui-checked': {
+                                                color: 'primary.main',
+                                            },
+                                        }}
+                                    />
+                                }
+                                label={
+                                    <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', userSelect: 'none' }}>
+                                        זכור אותי
+                                    </Typography>
+                                }
+                                sx={{ mr: 0, ml: 'auto' }}
+                            />
+                        </Box>
                         <Button type="submit" fullWidth size="xl">
                             כניסה למערכת
                         </Button>
