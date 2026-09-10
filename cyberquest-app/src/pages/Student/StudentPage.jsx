@@ -198,7 +198,7 @@ export default function StudentPage() {
                 }}
             />
 
-            <Box sx={{ width: '100%', maxWidth: 580, position: 'relative', zIndex: 1 }}>
+            <Box sx={{ width: '100%', maxWidth: 700, position: 'relative', zIndex: 1, mx: 'auto' }}>
                 <TerminalCard title="משטרת ישראל // עמדת חקירה מבצעית">
 
                     {/* ── LOGIN PHASE ── */}
@@ -335,9 +335,15 @@ export default function StudentPage() {
                                 }}
                             />
 
-                            {/* Question content card */}
+                            {/* Question content card - centered in layout, text RTL */}
                             <Paper
                                 elevation={0}
+                                className="police-question-card"
+                                style={{
+                                    direction: 'rtl',
+                                    textAlign: 'right',
+                                    unicodeBidi: 'plaintext',
+                                }}
                                 sx={{
                                     p: { xs: 2.5, sm: 3.5 },
                                     mb: 3,
@@ -345,19 +351,31 @@ export default function StudentPage() {
                                     backgroundColor: isDark ? 'rgba(5, 13, 28, 0.6)' : 'rgba(11, 41, 114, 0.03)',
                                     border: '1px solid',
                                     borderColor: isDark ? 'rgba(56, 189, 248, 0.15)' : 'rgba(11, 41, 114, 0.1)',
-                                    textAlign: 'center',
                                     direction: 'rtl',
+                                    textAlign: 'start',
+                                    mx: 'auto',
+                                    width: '100%',
+                                    maxWidth: 680,
                                 }}
                             >
                                 {currentQuestion.title && (
                                     <Typography
                                         variant="h5"
+                                        className="police-rtl-text question-title"
+                                        style={{
+                                            direction: 'rtl',
+                                            textAlign: 'right',
+                                            unicodeBidi: 'plaintext',
+                                        }}
                                         sx={{
                                             fontWeight: 800,
                                             color: isDark ? '#38bdf8' : '#0B2972',
                                             mb: 1.5,
-                                            textAlign: 'center',
+                                            textAlign: 'start',
+                                            direction: 'rtl',
                                             fontFamily: "'Assistant', sans-serif",
+                                            unicodeBidi: 'plaintext',
+                                            width: '100%',
                                         }}
                                     >
                                         {renderTextWithBold(currentQuestion.title)}
@@ -365,20 +383,29 @@ export default function StudentPage() {
                                 )}
                                 <Typography
                                     variant="body1"
+                                    className="police-rtl-text question-text"
+                                    style={{
+                                        direction: 'rtl',
+                                        textAlign: 'right',
+                                        unicodeBidi: 'plaintext',
+                                    }}
                                     sx={{
                                         color: isDark ? '#F1F5F9' : '#1E293B',
                                         lineHeight: 1.8,
                                         fontSize: { xs: '1.05rem', sm: '1.2rem' },
                                         whiteSpace: 'pre-line',
-                                        textAlign: 'center',
+                                        textAlign: 'start',
+                                        direction: 'rtl',
                                         fontFamily: "'Assistant', sans-serif",
+                                        unicodeBidi: 'plaintext',
+                                        width: '100%',
                                     }}
                                 >
                                     {renderTextWithBold(currentQuestion.text)}
                                 </Typography>
 
                                 {currentQuestion.imageUrl && (
-                                    <Box sx={{ mt: 2 }}>
+                                    <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <AnimatedMedia src={currentQuestion.imageUrl} />
                                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5 }}>
                                             <Button
@@ -399,9 +426,9 @@ export default function StudentPage() {
                                 )}
                             </Paper>
 
-                            {/* Multiple choice options */}
+                            {/* Multiple choice options - centered container, RTL items */}
                             {currentQuestion.type === 'multiple' && currentQuestion.options && (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2, direction: 'rtl', width: '100%', mx: 'auto', maxWidth: 680 }}>
                                     {currentQuestion.options.map((opt, i) => (
                                         <Card
                                             key={i}
@@ -419,7 +446,15 @@ export default function StudentPage() {
                                             <CardActionArea
                                                 onClick={() => handleSubmit(opt)}
                                                 disabled={isLocked}
-                                                sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 2 }}
+                                                style={{ direction: 'rtl' }}
+                                                sx={{
+                                                    p: 2,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'flex-start',
+                                                    gap: 2,
+                                                    direction: 'rtl',
+                                                }}
                                             >
                                                 <Box
                                                     sx={{
@@ -435,11 +470,28 @@ export default function StudentPage() {
                                                         color: isDark ? '#38bdf8' : '#0B2972',
                                                         border: '1px solid',
                                                         borderColor: isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(11, 41, 114, 0.2)',
+                                                        flexShrink: 0,
                                                     }}
                                                 >
                                                     {String.fromCharCode(1488 + i)}
                                                 </Box>
-                                                <Typography variant="body1" sx={{ fontWeight: 600, color: isDark ? '#F1F5F9' : '#0B2972', textAlign: 'right', flex: 1 }}>
+                                                <Typography
+                                                    variant="body1"
+                                                    className="police-rtl-text"
+                                                    style={{
+                                                        direction: 'rtl',
+                                                        textAlign: 'right',
+                                                        unicodeBidi: 'plaintext',
+                                                    }}
+                                                    sx={{
+                                                        fontWeight: 600,
+                                                        color: isDark ? '#F1F5F9' : '#0B2972',
+                                                        textAlign: 'start',
+                                                        direction: 'rtl',
+                                                        flex: 1,
+                                                        unicodeBidi: 'plaintext',
+                                                    }}
+                                                >
                                                     {opt}
                                                 </Typography>
                                             </CardActionArea>
@@ -450,7 +502,7 @@ export default function StudentPage() {
 
                             {/* Explanation (no answer needed) */}
                             {currentQuestion.type === 'explanation' && (
-                                <Box sx={{ mt: 2 }}>
+                                <Box sx={{ mt: 2, width: '100%', mx: 'auto', maxWidth: 680 }}>
                                     <Button
                                         onClick={() => handleSubmit('הבנתי')}
                                         fullWidth
@@ -466,28 +518,30 @@ export default function StudentPage() {
 
                             {/* Open Flag Answer */}
                             {currentQuestion.type !== 'multiple' && currentQuestion.type !== 'explanation' && (
-                                <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                                    <Input
-                                        id="answer-input"
-                                        value={answer}
-                                        onChange={(e) => setAnswer(e.target.value)}
-                                        placeholder="הקלד כאן את הפענוח / Flag..."
-                                        disabled={isLocked}
-                                        autoComplete="off"
-                                        autoFocus
-                                        label="תשובת החוקר"
-                                    />
-                                    <Button
-                                        type="submit"
-                                        fullWidth
-                                        disabled={isLocked}
-                                        icon={<SendIcon sx={{ fontSize: '1.1rem' }} />}
-                                        size="lg"
-                                        sx={{ mt: 1 }}
-                                    >
-                                        שליחת מענה לבדיקה
-                                    </Button>
-                                </form>
+                                <Box sx={{ width: '100%', mx: 'auto', maxWidth: 680 }}>
+                                    <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                                        <Input
+                                            id="answer-input"
+                                            value={answer}
+                                            onChange={(e) => setAnswer(e.target.value)}
+                                            placeholder="הקלד כאן את הפענוח / Flag..."
+                                            disabled={isLocked}
+                                            autoComplete="off"
+                                            autoFocus
+                                            label="תשובת החוקר"
+                                        />
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            disabled={isLocked}
+                                            icon={<SendIcon sx={{ fontSize: '1.1rem' }} />}
+                                            size="lg"
+                                            sx={{ mt: 1 }}
+                                        >
+                                            שליחת מענה לבדיקה
+                                        </Button>
+                                    </form>
+                                </Box>
                             )}
 
                             {/* Penalty Lockout Overlay */}

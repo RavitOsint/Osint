@@ -54,6 +54,10 @@ export default function Input({
                     '& .MuiInputBase-root': {
                         direction: 'rtl',
                     },
+                    '& .MuiInputBase-input': {
+                        direction: 'rtl',
+                        textAlign: 'start',
+                    },
                     ...sx,
                 }}
                 {...props}
@@ -95,6 +99,10 @@ export function Textarea({
                 sx={{
                     '& .MuiInputBase-root': {
                         direction: 'rtl',
+                    },
+                    '& .MuiInputBase-input': {
+                        direction: 'rtl',
+                        textAlign: 'start',
                     },
                     ...sx,
                 }}

@@ -48,13 +48,16 @@
 /* ── Container ───────────────────────────────────────────── */
 .student-container {
     width: 100%;
-    max-width: 520px;
+    max-width: 700px;
     position: relative;
     z-index: 1;
+    margin: 0 auto;
 }
 
 .phase-content {
-    text-align: center;
+    width: 100%;
+    direction: rtl;
+    text-align: right;
 }
 
 /* ── Logo ────────────────────────────────────────────────── */
@@ -210,14 +213,32 @@
 }
 
 /* ── Question Area ───────────────────────────────────────── */
+.police-rtl-text {
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: plaintext !important;
+}
+
+.police-question-card {
+    direction: rtl !important;
+    text-align: right !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+    max-width: 680px !important;
+}
+
 .question-area {
     margin-bottom: var(--space-xl);
     padding: var(--space-lg);
     background: rgba(0, 0, 0, 0.2);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-subtle);
-    text-align: center;
-    direction: rtl;
+    direction: rtl !important;
+    text-align: right !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 680px !important;
 }
 
 .question-title {
@@ -228,8 +249,10 @@
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     background-clip: text;
     -webkit-background-clip: text;
-    text-align: center;
+    text-align: right !important;
+    direction: rtl !important;
     letter-spacing: 0.05em;
+    unicode-bidi: plaintext !important;
 }
 
 .question-text {
@@ -238,8 +261,9 @@
     line-height: 1.8;
     color: var(--text-primary);
     white-space: pre-wrap;
-    text-align: center;
-    direction: rtl;
+    text-align: right !important;
+    direction: rtl !important;
+    unicode-bidi: plaintext !important;
 }
 
 .question-text strong {

@@ -476,6 +476,9 @@
     flex-direction: column;
     gap: 6px;
     min-width: 0;
+    text-align: right;
+    direction: rtl;
+    unicode-bidi: plaintext;
 }
 
 .item-text {
